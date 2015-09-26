@@ -3,7 +3,7 @@ var _sim = false; if(process.argv.length > 2 && process.argv[2] == 'simulate') _
 
 // constants
 var STRIPCOUNT = 2; // number of LED strips connected to the system (Q020 target: 10)
-var TARGETFPS = 2;  // target FPS -- assumption is 60fps
+var TARGETFPS = 60;  // target FPS -- assumption is 60fps
 var PWMSCALE = 4096; // 0..4095
 
 var fpsCounter = 0;
@@ -49,7 +49,7 @@ function StripSetAll(R, G, B) {
 // turn off LEDS when we exit for safety purposes
 function SafeShutDown() {
   console.log("Initiate shutdown")
-  PwmSetAll(0,0,0);
+  StripSetAll(0,0,0);
   process.exit(0);
 }
 process.on('SIGINT', SafeShutDown);
@@ -66,10 +66,8 @@ function MainLoop() {
 
 // watchdog check fps etc
 function WatchDogTimer() {
-  if(_sim) {
-    console.log("watchdog tick: " + fpsCounter + " fps");
-    fpsCounter = 0;
-  }
+  console.log("watchdog tick: " + fpsCounter + " fps");
+  fpsCounter = 0;
 }
 
 // this is the basic setup of a plugin
