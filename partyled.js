@@ -2,8 +2,8 @@
 var _sim = false; if(process.argv.length > 2 && process.argv[2] == 'simulate') _sim = true;
 
 // constants
-var STRIPCOUNT = 2; // number of LED strips connected to the system (Q020 target: 10)
-var TARGETFPS = 60;  // target FPS -- assumption is 60fps
+var STRIPCOUNT = 1; // number of LED strips connected to the system (Q020 target: 10)
+var TARGETFPS = 100;  // target FPS -- assumption is 60fps
 var PWMSCALE = 4096; // 0..4095
 
 var fpsCounter = 0;
@@ -21,24 +21,32 @@ if(!_sim)
     process.exit(0);
   }
   var pwm = PwmFactory( {
-      "freq": "50",   // frequency of the device
-      "correctionFactor": "1.0", // correction factor - fine tune the frequency
-      "address": "0x40", // i2c bus address
-      "device": '/dev/i2c-1' // device name
+      "freq": "400",   // high is good but low enough to prevent brightness/pwr issues
+      "correctionFactor": "1.0", // finetuning
+      "address": "0x40", // i2c bus
+      "device": '/dev/i2c-1'
     });
 }
 
-// RGB are 0..1
-// stripID is 0..number of strips
+// RGB values are 0..1 floats
+// stripID is 0..number of strips-1
 function StripSetOne(stripID, R, G, B) {
   if(_sim)
     console.log("setting strip " + stripID + " to ("+R+","+G+","+B+")");
   else
   {
-    pwm.setPwm(stripID * 3,     R * PWMSCALE, 0);
-    pwm.setPwm(stripID * 3 + 1, G * PWMSCALE, 0);
-    pwm.setPwm(stripID * 3 + 2, B * PWMSCALE, 0);
+    //console.log("setting strip " + stripID + " to ("+R+","+G+","+B+")");
+    pwm.setPwm(stripID * 3,     0, PWMScale(R));
+    pwm.setPwm(stripID * 3 + 1, 0, PWMScale(G));
+    pwm.setPwm(stripID * 3 + 2, 0, PWMScale(B));
   }
+}
+
+function PWMScale(val) {
+  var p = val * PWMSCALE;
+  if (p < 0) p = 0;
+  if (p > PWMSCALE-1) p = PWMSCALE-1;
+  return p;
 }
 
 // set all LED strips at once
@@ -48,7 +56,7 @@ function StripSetAll(R, G, B) {
 
 // turn off LEDS when we exit for safety purposes
 function SafeShutDown() {
-  console.log("Initiate shutdown")
+  console.log("-- Shutdown")
   StripSetAll(0,0,0);
   process.exit(0);
 }
@@ -71,19 +79,23 @@ function WatchDogTimer() {
 }
 
 // this is the basic setup of a plugin
-// in:  timer (milliseconds), strip count
+// in:  dT = timer (milliseconds)
+//      sC = strip count, use to offset effects (runs 0..# of strips - 1)
 // out: should be a (stripcount * 3) array of either floats or [0..99] ints depending on PWM needs
 function Update(dT, sC) {
-  brightness = 0.75 + 0.25 * Math.sin(dT / 1000);
+  var r = 0.5 + 0.5 * Math.sin(dT / 200);
+  var g = 0.5 + 0.5 * Math.sin(dT / 200 + 0.6);
+  var b = 0.5 + 0.5 * Math.sin(dT / 200 + 1.2);
   colors = [];
   for(i = 0; i < sC; i++) {
-    colors.push(brightness);
-    colors.push(brightness);
-    colors.push(0);
+    colors.push(r);
+    colors.push(g);
+    colors.push(b);
   }
   return colors;
 }
 
+console.log("Q42 / PARTYLED / start");
 // aim for 60 fps, TODO create reliable framerate method
 // watchdog every second
 setInterval(MainLoop, 1000/TARGETFPS);

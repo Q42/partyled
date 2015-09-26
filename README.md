@@ -27,8 +27,10 @@ Party LED system in 020
 * `curl -sLS https://apt.adafruit.com/add | sudo bash` om Adafruit's readymade Pi-stuff aan apt toe te voegen
 * `sudo apt-get install node`, dan `node -v` (moet minimaal 0.12 weergeven)
 * I2C aanzetten:
+  * `sudo apt-get install python-smbus`
+  * `sudo apt-get install i2c-tools`
+  * `sudo nano /etc/modules` en zorg ervoor dat `i2c-bcm2708` en `i2c-dev` erin staan
   * `sudo raspi-config`, Advanced options: zet I2C aan (en op boot) en zet Device Tree uit. Reboot.
   * checken: `sudo i2cdetect -y 1` moet geen error teruggeven
-    * Doet het dat toch: check dat `i2c-bcm2708` en `i2c-dev` in /etc/modules staan
 * `git clone https://github.com/Q42/partyled && cd partyled`
 * `npm install adafruit-pca9685`
