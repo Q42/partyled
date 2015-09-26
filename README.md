@@ -1,10 +1,8 @@
-# partyled
+# PARTYLED
 Party LED system in 020
 
-i2c enablement: https://www.raspberrypi.org/forums/viewtopic.php?f=28&t=97257
-
 # SETUP
-* haal een raspberry A+
+* Regel een bak 12V analoge LED strips, een hele zooi transistors (# LED strips x 3), draad, een Raspberry Pi, een of meer Adafruit PCA9685 boards, en een dikke vette 12V-voeding (reken 11.5W per meter LED-strip)
 * download current raspbian https://www.raspberrypi.org/downloads/raspbian/
 * stop een 8GB microSD via een adapter in je macbook
 * `diskutil list`
