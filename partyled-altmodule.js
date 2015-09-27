@@ -11,29 +11,27 @@ var fpsCounter = 0;
 if(!_sim)
 {
   try {
-    var I2C = require("i2c");
-    var PwmFactory = require("pca9685");
+    var PwmFactory1 = require("adafruit-pca9685");
+    var PwmFactory2 = require("adafruit-pca9685");
   }
   catch(e) {
     console.log(e);
-    console.log("\nCan't include I2C and/or PWM controller module:")
+    console.log("\nCan't include PWM controller module:")
     console.log("* If you're on a raspberry pi, followup setup instructions")
     console.log("* If you're on a macbook, run with '" + process.argv[0] + " " + process.argv[1] + " simulate'\n")
     process.exit(0);
   }
-  var pwm1 = new PwmFactory( {
-    i2c: new I2C(0x40, { device: "/dev/i2c-1" }),
-    frequency: 400,
-    debug: false
-    }, function() {
-      console.log("PWM bank 1 initialized");
+  var pwm1 = new PwmFactory1({
+      "freq": "400",   // high is good but low enough to prevent brightness/pwr issues
+      "correctionFactor": "1.0", // finetuning
+      "address": "0x40", // i2c bus
+      "device": '/dev/i2c-1'
     });
-  var pwm2 = new PwmFactory( {
-    i2c: new I2C(0x41, { device: "/dev/i2c-1" }),
-    frequency: 400,
-    debug: false
-    }, function() {
-      console.log("PWM bank 2 initialized");
+  var pwm2 = new PwmFactory2({
+      "freq": "400",   // high is good but low enough to prevent brightness/pwr issues
+      "correctionFactor": "1.0", // finetuning
+      "address": "0x41", // i2c bus
+      "device": '/dev/i2c-1'
     });
 }
 
@@ -42,27 +40,26 @@ if(!_sim)
 function StripSetOne(stripID, R, G, B) {
   if(_sim)
     console.log("setting strip " + stripID + " to ("+R+","+G+","+B+")");
-    else
-    {
-      if(stripID < 5) {
-        //console.log("setting strip 1:" + stripID + " to ("+R+","+G+","+B+")");
-        pwm1.setPulseRange(stripID * 3,     0, PWMScale(R));
-        pwm1.setPulseRange(stripID * 3 + 1, 0, PWMScale(G));
-        pwm1.setPulseRange(stripID * 3 + 2, 0, PWMScale(B));
-      } else {
-        //console.log("setting strip 2:" + (stripID-5) + " to ("+R+","+G+","+B+")");
-        pwm2.setPulseRange((stripID-5) * 3,     0, PWMScale(R));
-        pwm2.setPulseRange((stripID-5) * 3 + 1, 0, PWMScale(G));
-        pwm2.setPulseRange((stripID-5) * 3 + 2, 0, PWMScale(B));
-      }
+  else
+  {
+    if(stripID < 5) {
+      //console.log("setting strip 1:" + stripID + " to ("+R+","+G+","+B+")");
+      pwm1.setPwm(stripID * 3,     0, PWMScale(R));
+      pwm1.setPwm(stripID * 3 + 1, 0, PWMScale(G));
+      pwm1.setPwm(stripID * 3 + 2, 0, PWMScale(B));
+    } else {
+      //console.log("setting strip 2:" + (stripID-5) + " to ("+R+","+G+","+B+")");
+      pwm2.setPwm((stripID-5) * 3,     0, PWMScale(R));
+      pwm2.setPwm((stripID-5) * 3 + 1, 0, PWMScale(G));
+      pwm2.setPwm((stripID-5) * 3 + 2, 0, PWMScale(B));
     }
+  }
 }
 
-var p = 0;
 // scales to PWM (from 0..1 to eg 0..4095)
 // TODO gamma correction
 function PWMScale(val) {
-  p = val * PWMSCALE;
+  var p = val * PWMSCALE;
   if (p < 0) p = 0;
   if (p > PWMSCALE-1) p = PWMSCALE-1;
   return p;
@@ -82,16 +79,12 @@ function SafeShutDown() {
 process.on('SIGINT', SafeShutDown);
 process.on('SIGTERM', SafeShutDown);
 
-var i = 0;
-var c = [];
-var d = 0;
-
 // the mainloop functions like a gameloop
 function MainLoop() {
-  d = Date.now(); //millis since epoch
+  var d = Date.now(); //millis since epoch
   fpsCounter++;
-  c = Update(d, STRIPCOUNT);
-  for(i = 0; i < STRIPCOUNT; i++)
+  var c = Update(d, STRIPCOUNT);
+  for(i=0; i < STRIPCOUNT; i++)
     StripSetOne(i, c[i*3], c[i*3+1], c[i*3+2]);
 }
 
@@ -101,9 +94,6 @@ function WatchDogTimer() {
   fpsCounter = 0;
 }
 
-var r = 0;
-var g = 0;
-var b = 0;
 // this is the basic setup of a plugin
 // in:  dT = timer (milliseconds)
 //      sC = strip count
@@ -112,9 +102,9 @@ function Update(dT, sC) {
   colors = [];
   for(i = 0; i < sC; i++) {
     // sine wave 0..1 that moves across the strips
-    r = 0.5 + 0.5 * Math.sin(dT / 200 + i * 1.6);
-    g = 0.5 + 0.5 * Math.sin(dT / 200 + i * 1.6);
-    b = 0.5 + 0.5 * Math.sin(dT / 200 + i * 1.6);
+    var r = 0.5 + 0.5 * Math.sin(dT / 200 + i * 1.6);
+    var g = 0.5 + 0.5 * Math.sin(dT / 200 + i * 1.6);
+    var b = 0.5 + 0.5 * Math.sin(dT / 200 + i * 1.6);
     colors.push(r);
     colors.push(g);
     colors.push(b);

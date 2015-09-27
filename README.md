@@ -25,7 +25,7 @@ Party LED system in 020
 * update alles: `sudo apt-get update && sudo apt-get upgrade`
 * sudo apt-get install git
 * `curl -sLS https://apt.adafruit.com/add | sudo bash` om Adafruit's readymade Pi-stuff aan apt toe te voegen
-* `sudo apt-get install node`, dan `node -v` (moet minimaal 0.12 weergeven)
+* `sudo apt-get install node`, dan `node -v`
 * I2C aanzetten:
   * `sudo apt-get install python-smbus`
   * `sudo apt-get install i2c-tools`
@@ -34,3 +34,4 @@ Party LED system in 020
   * checken: `sudo i2cdetect -y 1` moet geen error teruggeven
 * `git clone https://github.com/Q42/partyled && cd partyled`
 * `npm install adafruit-pca9685`
+* `npm install i2c@0.1.8`
