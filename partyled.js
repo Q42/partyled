@@ -122,6 +122,21 @@ function Update(dT, sC) {
   return colors;
 }
 
+var ix, cc;
+function Update2(dT, sC) {
+  colors = [];
+  for(i = 0; i < sC; i++) {
+    ix = parseInt(dT / 200) % STRIPCOUNT;
+    cc = 0;
+    if(ix == i) cc = 1;
+    colors.push(cc);
+    colors.push(cc);
+    colors.push(cc);
+  }
+  return colors;
+}
+
+
 console.log("Q42 / PARTYLED / start");
 // aim for 60 fps, TODO create reliable framerate method
 // watchdog every second
