@@ -40,6 +40,6 @@ Party LED system in 020
     device_tree_param=i2c1=on,i2c1_baudrate=1200000
 ```
   * check dat het sneller is: `sudo reboot` en dan `dmesg|grep baudrate`
-* `npm install i2c@0.1.8`
+* `npm install i2c@0.1.8` (voor node 0.10.x)
 * `npm install pca9685`
 * `git clone https://github.com/Q42/partyled && cd partyled`

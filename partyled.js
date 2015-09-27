@@ -85,6 +85,7 @@ process.on('SIGTERM', SafeShutDown);
 var i = 0;
 var c = [];
 var d = 0;
+//var colors = new Array(3 * STRIPCOUNT)
 
 // the mainloop functions like a gameloop
 function MainLoop() {
