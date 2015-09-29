@@ -32,14 +32,13 @@ Party LED system in 020
   * `sudo nano /etc/modules` en zorg ervoor dat `i2c-bcm2708` en `i2c-dev` erin staan
   * `sudo raspi-config`, Advanced options: zet I2C aan (en op boot) en zet Device Tree uit. Reboot.
   * checken: `sudo i2cdetect -y 1` moet geen error teruggeven
-* I2C advanced, sneller maken baudrate van 100Kpbs naar 1.2Mbps
-  * boot.config:
+* I2C speedup: sneller maken baudrate van 100Kpbs naar 1.2Mbps
+  * `sudo nano /boot/config.txt`:
 ```
     device_tree=bcm2708-rpi-b-plus.dtb
     device_tree_param=i2c_arm=on,i2c_arm_baudrate=1200000
     device_tree_param=i2c1=on,i2c1_baudrate=1200000
 ```
-  * check dat het sneller is: `sudo reboot` en dan `dmesg|grep baudrate`
-* `npm install i2c@0.1.8` (voor node 0.10.x)
-* `npm install pca9685`
+  * check dat het sneller is: `sudo reboot` en dan `dmesg|grep baudrate` moet 1200000 laten zien
 * `git clone https://github.com/Q42/partyled && cd partyled`
+* `nohup python partyled.py &`
