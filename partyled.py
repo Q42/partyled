@@ -22,8 +22,8 @@ GAMMA = 2.2      # gamma correction
 
 pwm1 = PWM(0x40) # PCA9685 board one
 pwm2 = PWM(0x41) # PCA9685 board two
-pwm1.setPWMFreq(400) # Not too low, to keep responsiveness to signals high
-pwm2.setPWMFreq(400) # Also not too high, to prevent voltage rise to cut off and reduce brightness
+pwm1.setPWMFreq(100) # Not too low, to keep responsiveness to signals high
+pwm2.setPWMFreq(100) # Also not too high, to prevent voltage rise to cut off and reduce brightness
 
 # globals (to prevent reallocating/GC)fps = 0
 frames = 0
@@ -68,22 +68,30 @@ def generator_Strobe(dT, fr, sC):
     c = 0
     if fr % 10 == i: c = 1
     colors[i*3 + 0] = c
-    colors[i*3 + 0] = c
-    colors[i*3 + 0] = c
+    colors[i*3 + 1] = c
+    colors[i*3 + 2] = c
 
 # generator: smooth grayscale sinewave across strips
-def generator_GrayscaleWave(dT, fr, sC):
+def generator_Wave(dT, fr, sC):
   for i in range(0, sC):
-    colors[i*3 + 0] = 0.5 + 0.5 * math.sin(dT * 5 + i * 1.6)
-    colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5 + i * 1.6)
-    colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5 + i * 1.6)
+    colors[i*3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
+    colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
+    colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
+
+def generator_ON(dT, fr, sC):
+  for i in range(0, sC * 3):
+    colors[i] = 1
 
 print "-----/ Q42 / partyLED /------"
 
+amp = 1
+
 while (True):
-  generator_GrayscaleWave(time.time(), frames, STRIPCOUNT)
+  #generator_Wave(time.time(), frames, STRIPCOUNT)
+  generator_Strobe(time.time(), frames, STRIPCOUNT)
+  #generator_ON(0,0,STRIPCOUNT)
   for i in range(0, STRIPCOUNT):
-    setStripColor(i, colors[i*3], colors[i*3 + 1], colors[i*3 + 2])
+    setStripColor(i, colors[i*3] * amp, colors[i*3 + 1] * amp, colors[i*3 + 2] * amp)
   fps += 1
   frames += 1
   if time.time() > fpstimer + 1.0:
