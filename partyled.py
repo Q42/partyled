@@ -1,29 +1,51 @@
 #!/usr/bin/python
+# coding=utf-8
 
 from threading import Timer
 import time
 import math
 import sys
 import platform
+import os
+import socket
+import colorama
+from colorama import Fore, Back, Style
 
-if platform.system() == 'Darwin' or platform.system() == 'Windows':
-    print "WARNING: this program needs an I2C bus and should be run on a Raspberry Pi."
-    print "It is almost guaranteed not to work on your Mac or Windows box.\n"
+# setup ANSI space
+
+colorama.init()
+pos = lambda x, y: '\x1b[%d;%dH' % (y, x)
+def printPos(x, y, color, message):
+    if not NodeParent:
+        print color + pos(x, y) + message
+
+PWMAvailable = True
+if (len(sys.argv) > 1):
+    NodeParent = sys.argv[1] == "node"
+else:
+    NodeParent = False
+
+print NodeParent
 
 try:
     from Adafruit_PWM_Servo_Driver import PWM
 except ImportError, e:
-    print "Cannot import PWM driver ('", e, "'), please check setup instructions in README.md\n"
-    sys.exit()
+    print "entering stimulator mode..."
+    PWMAvailable = False
 
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
 PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2      # gamma correction
 
-pwm1 = PWM(0x40) # PCA9685 board one
-pwm2 = PWM(0x41) # PCA9685 board two
-pwm1.setPWMFreq(100) # Not too low, to keep responsiveness to signals high
-pwm2.setPWMFreq(100) # Also not too high, to prevent voltage rise to cut off and reduce brightness
+def setupPWM():
+    pwm1 = PWM(0x40) # PCA9685 board one
+    pwm2 = PWM(0x41) # PCA9685 board two
+    pwm1.setPWMFreq(100) # Not too low, to keep responsiveness to signals high
+    pwm2.setPWMFreq(100) # Also not too high, to prevent voltage rise to cut off and reduce brightness
+    return (pwm1, pwm2)
+
+if (PWMAvailable):
+    (pwm1, pwm2) = setupPWM()
 
 # globals (to prevent reallocating/GC)fps = 0
 frames = 0
@@ -34,15 +56,42 @@ colors = [0] * STRIPCOUNT * 3
 # set a single strip's color.
 #   StripID is 0..STRIPCOUNT
 #   r, g, b is 0..1
+
+def charForValue(v):
+    if (v == 0):
+        return ' '
+    if (v < 0.25):
+        return '░'
+    if (v >= 0.25 and v < 0.5):
+        return '▒'
+    if (v >= 0.5 and v < 0.75):
+        return '▓'
+
+    return '▉'
+
+def setStripColorSim(stripID, r, g, b):
+    printPos(stripID * 3 + 0, 0, Fore.RED, charForValue(r))
+    printPos(stripID * 3 + 1, 0, Fore.GREEN, charForValue(g))
+    printPos(stripID * 3 + 2, 0, Fore.BLUE, charForValue(b))
+
+def printListener(m):
+    print m
+
 def setStripColor(stripID, r, g, b):
-  if stripID < 5:
-    pwm1.setPWM(stripID * 3 + 0, 0, pwmscale(r))
-    pwm1.setPWM(stripID * 3 + 1, 0, pwmscale(g))
-    pwm1.setPWM(stripID * 3 + 2, 0, pwmscale(b))
-  else:
-    pwm2.setPWM((stripID - 5) * 3 + 0, 0, pwmscale(r))
-    pwm2.setPWM((stripID - 5) * 3 + 1, 0, pwmscale(g))
-    pwm2.setPWM((stripID - 5) * 3 + 2, 0, pwmscale(b))
+    if NodeParent:
+        printListener(str(stripID)+","+str(r)+","+str(g)+","+str(b)+";")
+
+    if (PWMAvailable):
+        if stripID < 5:
+            pwm1.setPWM(stripID * 3 + 0, 0, pwmscale(r))
+            pwm1.setPWM(stripID * 3 + 1, 0, pwmscale(g))
+            pwm1.setPWM(stripID * 3 + 2, 0, pwmscale(b))
+        else:
+            pwm2.setPWM((stripID - 5) * 3 + 0, 0, pwmscale(r))
+            pwm2.setPWM((stripID - 5) * 3 + 1, 0, pwmscale(g))
+            pwm2.setPWM((stripID - 5) * 3 + 2, 0, pwmscale(b))
+    else:
+        setStripColorSim(stripID, r, g, b)
 
 # clip and scale a 0..1 input (inclusive) to 0..PWMSCALE
 def pwmscale(val):
@@ -75,8 +124,8 @@ def generator_Strobe(dT, fr, sC):
 def generator_Wave(dT, fr, sC):
   for i in range(0, sC):
     colors[i*3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
-    colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
-    colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
+    colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+    colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
 
 def generator_ON(dT, fr, sC):
   for i in range(0, sC * 3):
@@ -87,8 +136,8 @@ print "-----/ Q42 / partyLED /------"
 amp = 1
 
 while (True):
-  #generator_Wave(time.time(), frames, STRIPCOUNT)
-  generator_Strobe(time.time(), frames, STRIPCOUNT)
+  generator_Wave(time.time(), frames, STRIPCOUNT)
+  # generator_Strobe(time.time(), frames, STRIPCOUNT)
   #generator_ON(0,0,STRIPCOUNT)
   for i in range(0, STRIPCOUNT):
     setStripColor(i, colors[i*3] * amp, colors[i*3 + 1] * amp, colors[i*3 + 2] * amp)
@@ -98,3 +147,4 @@ while (True):
     #print "FPS: ", fps
     fps = 0
     fpstimer = time.time()
+

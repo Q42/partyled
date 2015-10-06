@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+        <script src="/socket.io/socket.io.js"></script>
+        <script>
+            var socket = io.connect('http://localhost:4000');
+
+            $(document).ready(function() {
+                var element = $("#row").find("td");
+                var onChannelData = function (channel) {
+                    if (channel.length >= 4 && channel.length <= 4) {
+                        var r = Math.floor(channel[1] * 255);
+                        var g = Math.floor(channel[2] * 255);
+                        var b = Math.floor(channel[3] * 255);
+                        $(element[channel[0]]).css("background-color", "rgb("+r+", "+g+", "+b+")");
+                    }
+                };
+
+                socket.on('tick', function (data) {
+                    data.forEach(function (d) {
+                        onChannelData(d);
+                    });
+                });
+            });
+        </script>
+
+        <style>
+            td{
+                width: 50px;
+                height: 500px;
+            }
+        </style>
+    </head>
+    <body>
+        <table>
+            <tr id="row">
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+        </table>
+    </body>
+</html>
