@@ -1,36 +1,20 @@
 #!/usr/bin/python
 # coding=utf-8
 
-from threading import Timer
+import threading
 import time
 import math
 import sys
 import platform
 import os
 import socket
-import colorama
-from colorama import Fore, Back, Style
-
-# setup ANSI space
-
-colorama.init()
-pos = lambda x, y: '\x1b[%d;%dH' % (y, x)
-def printPos(x, y, color, message):
-    if not NodeParent:
-        print color + pos(x, y) + message
+import fileinput
 
 PWMAvailable = True
-if (len(sys.argv) > 1):
-    NodeParent = sys.argv[1] == "node"
-else:
-    NodeParent = False
-
-print NodeParent
 
 try:
     from Adafruit_PWM_Servo_Driver import PWM
 except ImportError, e:
-    print "entering stimulator mode..."
     PWMAvailable = False
 
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
@@ -51,35 +35,12 @@ if (PWMAvailable):
 frames = 0
 fps = 0
 fpstimer = 0
-colors = [0] * STRIPCOUNT * 3
 
 # set a single strip's color.
 #   StripID is 0..STRIPCOUNT
 #   r, g, b is 0..1
 
-def charForValue(v):
-    if (v == 0):
-        return ' '
-    if (v < 0.25):
-        return '░'
-    if (v >= 0.25 and v < 0.5):
-        return '▒'
-    if (v >= 0.5 and v < 0.75):
-        return '▓'
-
-    return '▉'
-
-def setStripColorSim(stripID, r, g, b):
-    printPos(stripID * 3 + 0, 0, Fore.RED, charForValue(r))
-    printPos(stripID * 3 + 1, 0, Fore.GREEN, charForValue(g))
-    printPos(stripID * 3 + 2, 0, Fore.BLUE, charForValue(b))
-
-def printListener(m):
-    print m
-
 def setStripColor(stripID, r, g, b):
-    if NodeParent:
-        printListener(str(stripID)+","+str(r)+","+str(g)+","+str(b)+";")
 
     if (PWMAvailable):
         if stripID < 5:
@@ -90,8 +51,7 @@ def setStripColor(stripID, r, g, b):
             pwm2.setPWM((stripID - 5) * 3 + 0, 0, pwmscale(r))
             pwm2.setPWM((stripID - 5) * 3 + 1, 0, pwmscale(g))
             pwm2.setPWM((stripID - 5) * 3 + 2, 0, pwmscale(b))
-    else:
-        setStripColorSim(stripID, r, g, b)
+
 
 # clip and scale a 0..1 input (inclusive) to 0..PWMSCALE
 def pwmscale(val):
@@ -113,46 +73,102 @@ def pwmscale(val):
 # generator: fast/hard on/off walk
 # example of when you might want to use the framecounter
 def generator_Strobe(dT, fr, sC):
-  for i in range(0, sC):
-    c = 0
-    if fr % 10 == i: c = 1
-    colors[i*3 + 0] = c
-    colors[i*3 + 1] = c
-    colors[i*3 + 2] = c
+    colors = [0] * STRIPCOUNT * 3
+    for i in range(0, sC):
+        c = 0
+        if fr % 10 == i: c = 1
+        colors[i*3 + 0] = c
+        colors[i*3 + 1] = c
+        colors[i*3 + 2] = c
+
+    return colors
 
 # generator: smooth grayscale sinewave across strips
 def generator_Wave(dT, fr, sC):
-  for i in range(0, sC):
-    colors[i*3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
-    colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-    colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
+    colors = [0] * STRIPCOUNT * 3
+    for i in range(0, sC):
+        colors[i*3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
+        colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
+
+    return colors
 
 def generator_Wave_Green(dT, fr, sC):
+    colors = [0] * STRIPCOUNT * 3
     for i in range(0, sC):
         colors[i*3 + 0] = 0
         colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
         colors[i*3 + 2] = 0
 
+    return colors
 
 def generator_ON(dT, fr, sC):
   for i in range(0, sC * 3):
     colors[i] = 1
 
-print "-----/ Q42 / partyLED /------"
-
 amp = 1
 
-while (True):
-  generator_Wave_Green(time.time(), frames, STRIPCOUNT)
-  # generator_Wave(time.time(), frames, STRIPCOUNT)
-  # generator_Strobe(time.time(), frames, STRIPCOUNT)
-  #generator_ON(0,0,STRIPCOUNT)
-  for i in range(0, STRIPCOUNT):
-    setStripColor(i, colors[i*3] * amp, colors[i*3 + 1] * amp, colors[i*3 + 2] * amp)
-  fps += 1
-  frames += 1
-  if time.time() > fpstimer + 1.0:
-    #print "FPS: ", fps
-    fps = 0
-    fpstimer = time.time()
+generators = []
 
+def tick():
+    colors = [0] * STRIPCOUNT * 3
+
+    for generator in generators:
+        newColors = generator(time.time(), frames, STRIPCOUNT)
+        for i in range(0, len(colors)):
+            colors[i] = colors[i] + newColors[i]
+
+    return colors
+
+class LightsThread(threading.Thread):
+    def run(self):
+        global fps
+        global frames
+        global fpstimer
+
+        while (True):
+
+            colors = tick()
+            string = ""
+
+            for i in range(0, STRIPCOUNT):
+                r = colors[i*3] * amp
+                g = colors[i*3 + 1] * amp
+                b = colors[i*3 + 2] * amp
+
+                setStripColor(i, r, g, b)
+                string = string + "0,"+str(i)+","+str(r)+","+str(g)+","+str(b)+";"
+            print string
+
+            fps += 1
+            frames += 1
+            if time.time() > fpstimer + 1.0:
+                print "1,FPS: ",fps,";"
+                fps = 0
+                fpstimer = time.time()
+
+
+class InputThread(threading.Thread):
+    def run(self):
+        global generators
+        while(True):
+            string = raw_input()
+
+            setGenerators = string.split("%")
+
+            newGenerator = []
+
+            for i in range(0, len(setGenerators)):
+                if (len(setGenerators[i]) > 1):
+                    switch = setGenerators[i].split("$")
+                    name = switch[0]
+                    if (name == "wave" and switch[1] == '1'):
+                        newGenerator.append(generator_Wave_Green)
+                    if (name == "strobe" and switch[1] == '1'):
+                        newGenerator.append(generator_Strobe)
+            generators = newGenerator
+
+lightsThread = LightsThread()
+lightsThread.start()
+inputThread = InputThread()
+inputThread.start()

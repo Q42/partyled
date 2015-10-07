@@ -8,12 +8,10 @@
             $(document).ready(function() {
                 var element = $("#row").find("td");
                 var onChannelData = function (channel) {
-                    if (channel.length >= 4 && channel.length <= 4) {
-                        var r = Math.floor(channel[1] * 255);
-                        var g = Math.floor(channel[2] * 255);
-                        var b = Math.floor(channel[3] * 255);
-                        $(element[channel[0]]).css("background-color", "rgb("+r+", "+g+", "+b+")");
-                    }
+                    var r = Math.floor(channel[2] * 255);
+                    var g = Math.floor(channel[3] * 255);
+                    var b = Math.floor(channel[4] * 255);
+                    $(element[channel[1]]).css("background-color", "rgb("+r+", "+g+", "+b+")");
                 };
 
                 socket.on('tick', function (data) {
@@ -21,10 +19,21 @@
                         onChannelData(d);
                     });
                 });
+
+
+                $("#wave").click(function() {
+                    socket.emit("switch", "wave");
+                });
+                $("#strobe").click(function() {
+                    socket.emit("switch", "strobe");
+                });
             });
         </script>
 
         <style>
+            html, body {
+                background-color: black;
+            }
             td{
                 width: 50px;
                 height: 500px;
@@ -32,6 +41,9 @@
         </style>
     </head>
     <body>
+
+        <button id="wave">WAVE</button> <button id="strobe">STROBE</button>
+
         <table>
             <tr id="row">
                 <td></td>
