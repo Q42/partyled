@@ -162,10 +162,13 @@ class InputThread(threading.Thread):
                 if (len(setGenerators[i]) > 1):
                     switch = setGenerators[i].split("$")
                     name = switch[0]
-                    if (name == "wave" and switch[1] == '1'):
+                    if (name == "wavegreen" and switch[1] == '1'):
                         newGenerator.append(generator_Wave_Green)
                     if (name == "strobe" and switch[1] == '1'):
                         newGenerator.append(generator_Strobe)
+                    if (name == "wavecolor" and switch[1] == '1'):
+                        newGenerator.append(generator_Wave)
+
             generators = newGenerator
 
 lightsThread = LightsThread()

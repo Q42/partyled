@@ -21,11 +21,14 @@
                 });
 
 
-                $("#wave").click(function() {
-                    socket.emit("switch", "wave");
+                $("#wavegreen").click(function() {
+                    socket.emit("switch", "wavegreen");
                 });
                 $("#strobe").click(function() {
                     socket.emit("switch", "strobe");
+                });
+                $("#wavecolor").click(function() {
+                    socket.emit("switch", "wavecolor");
                 });
             });
         </script>
@@ -42,7 +45,7 @@
     </head>
     <body>
 
-        <button id="wave">WAVE</button> <button id="strobe">STROBE</button>
+        <button id="wavegreen">WAVE GREEN</button> <button id="strobe">STROBE</button> <button id="wavecolor">WAVE COLOR</button>
 
         <table>
             <tr id="row">

@@ -12,6 +12,15 @@ app.get("/", function (req, res) {
 
 var switches = {};
 
+var sendSwitch = function() {
+    var command = "";
+    Object.keys(switches).forEach(function(key) {
+        command += key + "$" + (switches[key] ? 1 : 0) + "%"
+    });
+    console.log(command);
+    if (process) process.stdin.write(command+"\n");
+};
+
 io.on('connection', function (socket) {
     socket.on("switch", function(pattern) {
         if (switches[pattern] === undefined) {
@@ -19,12 +28,8 @@ io.on('connection', function (socket) {
         } else {
             switches[pattern] = !switches[pattern]
         }
-        var command = "";
-        Object.keys(switches).forEach(function(key) {
-            command += key + "$" + (switches[key] ? 1 : 0) + "%"
-        });
-        console.log(command);
-        if (process) process.stdin.write(command+"\n");
+
+        sendSwitch();
     });
 });
 
@@ -51,7 +56,6 @@ var ledProcess = function() {
                 console.log(separated);
             }
 
-
             return i
         });
 
@@ -61,6 +65,8 @@ var ledProcess = function() {
     process.stderr.on('data', function (data) {
         console.error(data.toString());
     });
+
+    sendSwitch();
 };
 
 ledProcess();
