@@ -1,8 +1,5 @@
-
+var fs = require("fs");
 var spawn = require('child_process').spawn;
-
-var standardOut = "";
-
 var _ = require("underscore");
 var express = require("express");
 var app = express();
@@ -13,15 +10,34 @@ app.get("/", function (req, res) {
     res.sendFile(__dirname + "/public/index.html");
 });
 
-var process = spawn('python', ['partyled.py', 'node']);
-process.stdout.on('data', function (data) {
+var sendTick = function(packet) {
+    io.emit('tick', packet);
+};
+
+var tick = _.throttle(sendTick, 10);
+
+var process;
+var ledProcess = function() {
+    process = spawn('python', ['partyled.py', 'node']);
+    process.stdout.on('data', function (data) {
 
 
-    var packet = data.toString().split(";").map(function(i) {
-        return i.split(",").map(function(i) {
-            return parseFloat(i);
+        var packet = data.toString().split(";").map(function (i) {
+            return i.split(",").map(function (i) {
+                return parseFloat(i);
+            });
         });
+
+        tick(packet);
     });
 
-    io.emit('tick', packet);
+};
+
+ledProcess();
+
+fs.watch(".", function (event, filename) {
+    if (filename !== "partyled.py") return;
+    console.log(event, filename);
+    process.kill();
+    ledProcess();
 });

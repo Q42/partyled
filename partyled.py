@@ -127,6 +127,13 @@ def generator_Wave(dT, fr, sC):
     colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
     colors[i*3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
 
+def generator_Wave_Green(dT, fr, sC):
+    for i in range(0, sC):
+        colors[i*3 + 0] = 0
+        colors[i*3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        colors[i*3 + 2] = 0
+
+
 def generator_ON(dT, fr, sC):
   for i in range(0, sC * 3):
     colors[i] = 1
@@ -136,7 +143,8 @@ print "-----/ Q42 / partyLED /------"
 amp = 1
 
 while (True):
-  generator_Wave(time.time(), frames, STRIPCOUNT)
+  generator_Wave_Green(time.time(), frames, STRIPCOUNT)
+  # generator_Wave(time.time(), frames, STRIPCOUNT)
   # generator_Strobe(time.time(), frames, STRIPCOUNT)
   #generator_ON(0,0,STRIPCOUNT)
   for i in range(0, STRIPCOUNT):
