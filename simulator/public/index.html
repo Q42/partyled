@@ -1,5 +1,7 @@
 <html>
     <head>
+        <script src="https://use.typekit.net/hqi1rzv.js"></script>
+        <script>try{Typekit.load({ async: true });}catch(e){}</script>
         <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script>
@@ -20,34 +22,143 @@
                     });
                 });
 
+                socket.on("switches", function(switches) {
+                    Object.keys(switches).forEach(function(el) {
+                        var element = $(".button[data-name = "+el+"]");
+                        if (switches[el]) {
+                            element.addClass("active");
+                        } else {
+                            element.removeClass("active");
+                        }
+                    });
+                });
 
-                $("#wavegreen").click(function() {
-                    socket.emit("switch", "wavegreen");
+                var disableGroup = function(name, group) {
+                    $(".control-panel .button.active[data-group="+group+"]").each(function() {
+                        socket.emit("set", { name: $(this).attr("data-name"), value: false });
+                    });
+                };
+
+                $(".control-panel .button[data-type=click]").click(function() {
+                    var el = $(this);
+                    var name = el.attr("data-name");
+                    var to = !el.hasClass("active");
+
+                    disableGroup(name, el.attr("data-group"));
+
+                    socket.emit("set", { name: $(this).attr("data-name"), value: to });
+
+                    if (to) {
+                        el.addClass("active");
+                    } else {
+                        el.removeClass("active");
+                    }
                 });
-                $("#strobe").click(function() {
-                    socket.emit("switch", "strobe");
-                });
-                $("#wavecolor").click(function() {
-                    socket.emit("switch", "wavecolor");
+                $(".control-panel .button[data-type=hold]").mouseup(function() {
+                    var el = $(this);
+                    socket.emit("set", { name: el.attr("data-name"), value: false });
+                }).mousedown(function() {
+                    var el = $(this);
+                    socket.emit("set", { name: el.attr("data-name"), value: true });
                 });
             });
         </script>
 
         <style>
+            * {
+                -webkit-touch-callout: none;
+                -webkit-user-select: none;
+                -khtml-user-select: none;
+                -moz-user-select: none;
+                -ms-user-select: none;
+                user-select: none;
+            }
             html, body {
                 background-color: black;
+                text-align: center;
+                margin: 0;
+                padding: 0;
+                font-family: "Aktiv Grotesk", sans-serif;
             }
-            td{
+
+            #simulator {
+                width: 100%;
+                margin-bottom: 50px;
+            }
+
+            #simulator td{
                 width: 50px;
-                height: 500px;
+                height: 200px;
+            }
+
+            .control-panel {
+                background-color: rgb(29,29,29);
+                width: 550px;
+                margin: 0 auto;
+                clear: both;
+            }
+
+            .button {
+                width: 100px;
+                height: 100px;
+                margin: 5px;
+                background-color: rgb(65,65,65);
+                float:left;
+                box-shadow: inset 0 0 1px black;
+                border-radius: 2px;
+            }
+
+            .button.active {
+                background-color: rgb(0,0,0);
+            }
+
+            .button .title {
+                color: white;
+                margin-top: 38px;
+                font-size: 12px;
+            }
+
+            .button .label {
+                width: 90px;
+                height: 7px;
+                margin: 5px;
+                background-color: #0b97c4;
+                opacity: 0.5;
+                box-shadow: inset 0 0 1px rgba(0,0,0,0.6);
+
+            }
+
+            .button.active .label {
+                opacity: 1;
+                box-shadow: inset 0 0 4px black;
+            }
+
+            .button .label.green {
+                background-color: rgb(0, 255, 0);
+            }
+            .button .label.white {
+                background-color: rgb(255, 255, 255);
+            }
+            .button .label.blue {
+                background-color: rgb(0, 0, 255);
+            }
+            .button .label.purple {
+                 background-color: rgb(255, 0, 255);
+            }
+            .button .label.red {
+                background-color: rgb(255, 0, 0);
+            }
+            .button .label.yellow {
+                background-color: rgb(255, 255, 0);
+            }
+
+            .clear {
+                clear: both;
             }
         </style>
     </head>
     <body>
-
-        <button id="wavegreen">WAVE GREEN</button> <button id="strobe">STROBE</button> <button id="wavecolor">WAVE COLOR</button>
-
-        <table>
+        <table id="simulator" cellpadding="0" cellspacing="0">
             <tr id="row">
                 <td></td>
                 <td></td>
@@ -61,5 +172,50 @@
                 <td></td>
             </tr>
         </table>
+
+        <div class="control-panel">
+            <div class="button" data-name="wavegreen" data-type="click" data-group="1">
+                <div class="label green"></div>
+                <div class="title">GREEN WAVE</div>
+            </div>
+            <div class="button" data-name="waveblue" data-type="click" data-group="1">
+                <div class="label blue"></div>
+                <div class="title">BLUE WAVE</div>
+            </div>
+            <div class="button" data-name="wavepurple" data-type="click" data-group="1">
+                <div class="label purple"></div>
+                <div class="title">PURPLE WAVE</div>
+            </div>
+            <div class="button" data-name="wavered" data-type="click" data-group="1">
+                <div class="label red"></div>
+                <div class="title">RED WAVE</div>
+            </div>
+            <div class="button" data-name="wavewhite" data-type="click" data-group="1">
+                <div class="label white"></div>
+                <div class="title">WHITE WAVE</div>
+            </div>
+
+            <div class="button" data-name="scatter" data-type="hold" data-group="2">
+                <div class="label white"></div>
+                <div class="title">SCATTER HOLD</div>
+            </div>
+            <div class="button" data-name="scatter" data-type="click" data-group="2">
+                <div class="label white"></div>
+                <div class="title">SCATTER</div>
+            </div>
+            <div class="button" data-name="strobe" data-type="hold" data-group="2">
+                <div class="label white"></div>
+                <div class="title">STROBE HOLD</div>
+            </div>
+            <div class="button" data-name="strobe" data-type="click" data-group="2">
+                <div class="label white"></div>
+                <div class="title">STROBE</div>
+            </div>
+            <div class="button" data-name="wavecolor">
+                <div class="label yellow"></div>
+                <div class="title">WAVE COLOR</div>
+            </div>
+            <div class="clear"></div>
+        </div>
     </body>
 </html>

@@ -77,7 +77,7 @@ def pwmscale(val):
 
 # generator: fast/hard on/off walk
 # example of when you might want to use the framecounter
-def generator_Strobe(dT, fr, sC):
+def generator_Scatter(dT, fr, sC):
     global colors
     for i in range(0, sC):
         c = 0
@@ -86,6 +86,16 @@ def generator_Strobe(dT, fr, sC):
         colors[i * 3 + 1] += c
         colors[i * 3 + 2] += c
 
+def generator_Strobe(dT, fr, sC):
+    if fr % 2:
+        v = 1
+    else:
+        v = 0
+
+    for i in range(0, sC):
+        colors[i * 3 + 0] = v
+        colors[i * 3 + 1] = v
+        colors[i * 3 + 2] = v
 
 # generator: smooth grayscale sinewave across strips
 def generator_Wave(dT, fr, sC):
@@ -95,47 +105,82 @@ def generator_Wave(dT, fr, sC):
         colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
         colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
 
-    return colors
-
 
 def generator_Wave_Green(dT, fr, sC):
     global colors
     for i in range(0, sC):
         colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
-    return colors
+def generator_Wave_Blue(dT, fr, sC):
+    global colors
+    for i in range(0, sC):
+        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
+def generator_Wave_Purple(dT, fr, sC):
+    global colors
+    for i in range(0, sC):
+        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+
+def generator_Wave_Red(dT, fr, sC):
+    global colors
+    for i in range(0, sC):
+        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+
+def generator_Wave_White(dT, fr, sC):
+    global colors
+    for i in range(0, sC):
+        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
 def generator_ON(dT, fr, sC):
     for i in range(0, sC * 3):
         colors[i] = 1
 
+def generator_Green_Burst(dT, fr, sC):
+    for i in range(0, sC * 3):
+        colors[i] += 0
 
 amp = 1
 
 generators = []
 
-
+currentTime = time.time()
 def tick():
     global colors
     colors = [0] * STRIPCOUNT * 3
+    currentTime = time.time()
     for generator in generators:
-        generator(time.time(), frames, STRIPCOUNT)
+        generator(currentTime, frames, STRIPCOUNT)
 
+    generator_Green_Burst(currentTime, frames, STRIPCOUNT)
+
+def sleepFromFPS(currentFps):
+	
+	# if fps < 60:
+	# 	return
+
+	# fw = (1.0 / 60)
+	# fc = (1.0 / currentFps)
+
+	# sleepTime = fw - fc
+
+	# print "1,FPS sleep: ", fw, fc, currentFps, sleepTime, ";"
+
+	time.sleep(0.001)
 
 class LightsThread(threading.Thread):
     def run(self):
-        global fps
-        global frames
-        global fpstimer
+        global fps, frames, fpstimer, r, g, b
 
         r = 0
         g = 0
         b = 0
+        currentFPS = 0
 
         while True:
             global colors, r, g, b
-            time.sleep(0.001)
             tick()
 
             string = ""
@@ -150,9 +195,12 @@ class LightsThread(threading.Thread):
             # print string for capture with node
             print string
 
+            sleepFromFPS(fps)
+
             fps += 1
             frames += 1
             if time.time() > fpstimer + 1.0:
+            	currentFPS = fps
                 print "1,FPS: ", fps, ";"
                 fps = 0
                 fpstimer = time.time()
@@ -163,6 +211,8 @@ class InputThread(threading.Thread):
         global generators
         while True:
             string = raw_input()
+            if string == "e":
+            	process.exit()
 
             setGenerators = string.split("%")
 
@@ -174,6 +224,16 @@ class InputThread(threading.Thread):
                     name = switch[0]
                     if name == "wavegreen" and switch[1] == '1':
                         newGenerator.append(generator_Wave_Green)
+                    if name == "waveblue" and switch[1] == '1':
+                        newGenerator.append(generator_Wave_Blue)
+                    if name == "wavepurple" and switch[1] == '1':
+                        newGenerator.append(generator_Wave_Purple)
+                    if name == "wavered" and switch[1] == '1':
+                        newGenerator.append(generator_Wave_Red)
+                    if name == "wavewhite" and switch[1] == '1':
+                        newGenerator.append(generator_Wave_White)
+                    if name == "scatter" and switch[1] == '1':
+                        newGenerator.append(generator_Scatter)
                     if name == "strobe" and switch[1] == '1':
                         newGenerator.append(generator_Strobe)
                     if name == "wavecolor" and switch[1] == '1':

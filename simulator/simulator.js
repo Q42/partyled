@@ -22,6 +22,7 @@ var sendSwitch = function() {
 };
 
 io.on('connection', function (socket) {
+    socket.emit("switches", switches);
     socket.on("switch", function(pattern) {
         if (switches[pattern] === undefined) {
             switches[pattern] = true
@@ -30,6 +31,13 @@ io.on('connection', function (socket) {
         }
 
         sendSwitch();
+        io.emit("switches", switches);
+    });
+    socket.on("set", function(pattern) {
+        switches[pattern["name"]] = pattern["value"];
+
+        sendSwitch();
+        io.emit("switches", switches);
     });
 });
 
