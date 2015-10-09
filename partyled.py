@@ -157,7 +157,7 @@ def tick():
     generator_Green_Burst(currentTime, frames, STRIPCOUNT)
 
 def sleepFromFPS(currentFps):
-	
+	return
 	# if fps < 60:
 	# 	return
 
@@ -168,7 +168,7 @@ def sleepFromFPS(currentFps):
 
 	# print "1,FPS sleep: ", fw, fc, currentFps, sleepTime, ";"
 
-	time.sleep(0.001)
+	# time.sleep(0.001)
 
 class LightsThread(threading.Thread):
     def run(self):
