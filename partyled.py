@@ -9,12 +9,14 @@ import platform
 import os
 import socket
 import fileinput
+import signal
 
 PWMAvailable = True
 
 try:
     from Adafruit_PWM_Servo_Driver import PWM
 except ImportError, e:
+    print(e)
     PWMAvailable = False
 
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
@@ -46,6 +48,7 @@ fpstimer = 0
 #   r, g, b is 0..1
 
 def setStripColor(stripID, r, g, b):
+    #print "Setting ", stripID, " to ", r, "/", g, "/", b
     if (PWMAvailable):
         if stripID < 5:
             pwm1.setPWM(stripID * 3 + 0, 0, pwmscale(r))
@@ -144,7 +147,7 @@ def generator_Green_Burst(dT, fr, sC):
 
 amp = 1
 
-generators = []
+generators = [generator_Wave_White]
 
 currentTime = time.time()
 def tick():
@@ -157,7 +160,7 @@ def tick():
     generator_Green_Burst(currentTime, frames, STRIPCOUNT)
 
 def sleepFromFPS(currentFps):
-	
+        return	
 	# if fps < 60:
 	# 	return
 
@@ -168,7 +171,7 @@ def sleepFromFPS(currentFps):
 
 	# print "1,FPS sleep: ", fw, fc, currentFps, sleepTime, ";"
 
-	time.sleep(0.001)
+	# time.sleep(0.001)
 
 class LightsThread(threading.Thread):
     def run(self):
@@ -183,17 +186,17 @@ class LightsThread(threading.Thread):
             global colors, r, g, b
             tick()
 
-            string = ""
+            # string = ""
             for i in range(0, STRIPCOUNT):
                 r = colors[i * 3] * amp
                 g = colors[i * 3 + 1] * amp
                 b = colors[i * 3 + 2] * amp
 
                 setStripColor(i, r, g, b)
-                string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
+                # string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
 
             # print string for capture with node
-            print string
+            # print string
 
             sleepFromFPS(fps)
 
@@ -242,7 +245,18 @@ class InputThread(threading.Thread):
             generators = newGenerator
 
 
+def signal_handler(signal, frame):
+        print('Breaking')
+        lightsThread.stop()
+        inputThread.stop()
+        sys.exit(0)
+
+signal.signal(signal.SIGINT, signal_handler)
+
+
 lightsThread = LightsThread()
-lightsThread.start()
+#lightsThread.start()
 inputThread = InputThread()
 inputThread.start()
+
+lightsThread.run()
