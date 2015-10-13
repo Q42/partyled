@@ -7,8 +7,6 @@ import math
 import sys
 from flask import Flask, render_template, jsonify
 
-execfile("generators.py")
-
 PWMAvailable = True
 
 try:
@@ -21,6 +19,8 @@ PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
 
 colors = [0] * STRIPCOUNT * 3
+
+execfile("generators.py")
 
 def setupPWM():
     pwm1 = PWM(0x40)  # PCA9685 board one
@@ -72,14 +72,14 @@ currentTime = time.time()
 
 def tick():
     global colors
-    for i in range(0, STRIPCOUNT):
-        colors[i * 3 + 0] = 0
-        colors[i * 3 + 1] = 0
-        colors[i * 3 + 2] = 0
+    for i in range(0, STRIPCOUNT*3):
+        colors[i] = 0
 
     currentTime = time.time()
     for generator in generators:
-        generator(currentTime, frames, STRIPCOUNT)
+        newColors = generator(currentTime, frames, STRIPCOUNT)
+        for i in range(0, STRIPCOUNT*3):
+            colors[i] += newColors[i]
 
 class LightsThread(threading.Thread):
     def run(self):
