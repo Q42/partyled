@@ -33,13 +33,21 @@
 
                 var disableGroup = function(name, group) {
                     $(".control-panel .button.active[data-group="+group+"]").each(function() {
-//                        socket.emit("set", { name: $(this).attr("data-name"), value: false });
+                        setSwitch($(this).attr("data-name"), false);
                     });
                 };
 
                 var setSwitch = function(name, value) {
                     $.getJSON("/generator/"+name+"/"+ (value ? 1 : 0), function(json) {
                         console.log(json);
+                        Object.keys(json).forEach(function(el) {
+                            var element = $(".button[data-name = "+el+"]");
+                            if (json[el]) {
+                                element.addClass("active");
+                            } else {
+                                element.removeClass("active");
+                            }
+                        });
                     });
                 };
 
