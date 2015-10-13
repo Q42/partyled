@@ -3,10 +3,8 @@
         <script src="https://use.typekit.net/hqi1rzv.js"></script>
         <script>try{Typekit.load({ async: true });}catch(e){}</script>
         <script src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
-        <script src="/socket.io/socket.io.js"></script>
+        <!--<script src="http://cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.7/socket.io.min.js"></script>-->
         <script>
-            var socket = io.connect('http://localhost:4000');
-
             $(document).ready(function() {
                 var element = $("#row").find("td");
                 var onChannelData = function (channel) {
@@ -16,26 +14,32 @@
                     $(element[channel[1]]).css("background-color", "rgb("+r+", "+g+", "+b+")");
                 };
 
-                socket.on('tick', function (data) {
-                    data.forEach(function (d) {
-                        onChannelData(d);
-                    });
-                });
-
-                socket.on("switches", function(switches) {
-                    Object.keys(switches).forEach(function(el) {
-                        var element = $(".button[data-name = "+el+"]");
-                        if (switches[el]) {
-                            element.addClass("active");
-                        } else {
-                            element.removeClass("active");
-                        }
-                    });
-                });
+//                socket.on('tick', function (data) {
+//                    data.forEach(function (d) {
+//                        onChannelData(d);
+//                    });
+//                });
+//
+//                socket.on("switches", function(switches) {
+//                    Object.keys(switches).forEach(function(el) {
+//                        var element = $(".button[data-name = "+el+"]");
+//                        if (switches[el]) {
+//                            element.addClass("active");
+//                        } else {
+//                            element.removeClass("active");
+//                        }
+//                    });
+//                });
 
                 var disableGroup = function(name, group) {
                     $(".control-panel .button.active[data-group="+group+"]").each(function() {
-                        socket.emit("set", { name: $(this).attr("data-name"), value: false });
+//                        socket.emit("set", { name: $(this).attr("data-name"), value: false });
+                    });
+                };
+
+                var setSwitch = function(name, value) {
+                    $.getJSON("/generator/"+name+"/"+ (value ? 1 : 0), function(json) {
+                        console.log(json);
                     });
                 };
 
@@ -45,9 +49,7 @@
                     var to = !el.hasClass("active");
 
                     disableGroup(name, el.attr("data-group"));
-
-                    socket.emit("set", { name: $(this).attr("data-name"), value: to });
-
+                    setSwitch($(this).attr("data-name"), to);
                     if (to) {
                         el.addClass("active");
                     } else {
@@ -55,11 +57,9 @@
                     }
                 });
                 $(".control-panel .button[data-type=hold]").mouseup(function() {
-                    var el = $(this);
-                    socket.emit("set", { name: el.attr("data-name"), value: false });
+                    setSwitch($(this).attr("data-name"), false);
                 }).mousedown(function() {
-                    var el = $(this);
-                    socket.emit("set", { name: el.attr("data-name"), value: true });
+                    setSwitch($(this).attr("data-name"), true);
                 });
             });
         </script>
