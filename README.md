@@ -3,10 +3,13 @@ Party LED system in 020
 
 # SETUP
 * Regel een bak 12V analoge LED strips, een hele zooi transistors (# LED strips x 3), draad, een Raspberry Pi, een of meer Adafruit PCA9685 boards, en een dikke vette 12V-voeding (reken 11.5W per meter LED-strip)
+  * transistors: TO220 darlingtons, met heatsinks(!) anders worden ze te heet
+  * soldeer alles met solid core wire, anders smelt de boel
+  * gebruik een ouwe PC-voeding als relatief goedkope +12V-voeding voor 300+ W. Pak alle gele kabeltjes bij elkaar, die zijn allemaal +12V, en zwarte kabeltjes voor GND. Soldeer ze samen of verdeel ze over de outputs om te voorkomen dat er teveel stroom op één kabeltje komt te staan.
+  * haal uit diezelfde voeding de +5V voor de Raspberry Pi, door een micro USB cable door te knippen en de +5V/GND kabeltjes te connecten (bij zowel ATX als USB is +5V een rode kabel, GND is zwart)
 * download current raspbian https://www.raspberrypi.org/downloads/raspbian/
 * stop een 8GB microSD via een adapter in je macbook
-* `diskutil list`
-** zoek de identifier van de SD-kaart, bijv disk2 (verkeerde pakken is desastreus, check de size!)
+* `diskutil list`, zoek de identifier van de SD-kaart, bijv disk2 (verkeerde pakken is desastreus, check de size!)
 * `diskutil unmountDisk diskX`
 * `sudo dd if=yyyy-mm-dd-wheezy-raspbian.img of=/dev/diskX bs=2m`
 * Voor wifi ipv LAN: edit `/etc/network/interfaces` *op de SD-kaart* door tijdelijk op LAN aan te sluiten en in te SSH-en.
