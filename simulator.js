@@ -64,18 +64,21 @@ var ledProcess = function() {
     process.stdin.setEncoding('utf-8');
     process.stdout.on('data', function (data) {
         var packet = data.toString().replace(/\n/g, "").split(";").map(function (i) {
-            var separated = i.split(",");
-            if (parseInt(separated[0]) === 0) {
-                return separated.map(function (i) {
-                    return parseFloat(i);
-                });
+            // let through python debug logging, every line that starts with a bang
+            if(i[0] == '!')
+              console.log(i);
+            else {
+              var separated = i.split(",");
+              if (parseInt(separated[0]) === 0) {
+                  return separated.map(function (i) {
+                      return parseFloat(i);
+                  });
+              }
+              if (separated[0] === '1' && separated.length > 1 && separated[1].indexOf("FPS") > -1) {
+                  console.log(separated);
+              }
+              return i
             }
-
-            if (separated[0] === '1' && separated.length > 1 && separated[1].indexOf("FPS") > -1) {
-                console.log(separated);
-            }
-
-            return i
         });
         tick(packet);
     });

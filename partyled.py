@@ -31,7 +31,7 @@ r = 0
 g = 0
 b = 0
 
-#print "==== PARTYLED ====\nSimulation: ", IsSimulated
+print "==== PARTYLED ====\nSimulation: ", IsSimulated
 
 execfile("generators.py")
 
@@ -144,8 +144,10 @@ def updateGenerators():
             newGenerator.append(generator_Strobe)
         if name == "wavecolor" and value == 1:
             newGenerator.append(generator_Wave)
-        if name == "ghost" and value == 1:
-            newGenerator.append(generator_Ghost)
+        if name == "ghost1" and value == 1:
+            newGenerator.append(generator_Ghost1)
+        if name == "ghost2" and value == 1:
+            newGenerator.append(generator_Ghost2)
 
     generators = newGenerator
 

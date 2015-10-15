@@ -114,24 +114,58 @@ def generator_Green_Burst(dT, fr, sC):
 
     return g_greenBurstColors
 
-g_ghostColors = [0] * STRIPCOUNT * 3
-def generator_Ghost(dT, fr, sC):
-    global g_ghostColors
+g_ghost1Colors = [0] * STRIPCOUNT * 3
+def generator_Ghost1(dT, fr, sC):
+    global g_ghost1Colors
     sp = 0.006
     for i in range(0, sC):
         c = 1
         if(int(dT*10) % 50) == i:
             z = int(dT*50) % 4
             if z == 0:
-                g_ghostColors[i*3 + 0] = random.random()
-                g_ghostColors[i*3 + 1] = random.random()
-                g_ghostColors[i*3 + 2] = random.random()
+                g_ghost1Colors[i*3 + 0] = random.random()
+                g_ghost1Colors[i*3 + 1] = random.random()
+                g_ghost1Colors[i*3 + 2] = random.random()
         else:
-            g_ghostColors[i*3 + 0] -= sp
-            g_ghostColors[i*3 + 1] -= sp
-            g_ghostColors[i*3 + 2] -= sp
-            if(g_ghostColors[i*3 + 0] < 0): g_ghostColors[i*3 + 0] = 0
-            if(g_ghostColors[i*3 + 1] < 0): g_ghostColors[i*3 + 1] = 0
-            if(g_ghostColors[i*3 + 2] < 0): g_ghostColors[i*3 + 2] = 0
+            g_ghost1Colors[i*3 + 0] -= sp
+            g_ghost1Colors[i*3 + 1] -= sp
+            g_ghost1Colors[i*3 + 2] -= sp
+            if(g_ghost1Colors[i*3 + 0] < 0): g_ghost1Colors[i*3 + 0] = 0
+            if(g_ghost1Colors[i*3 + 1] < 0): g_ghost1Colors[i*3 + 1] = 0
+            if(g_ghost1Colors[i*3 + 2] < 0): g_ghost1Colors[i*3 + 2] = 0
 
-    return g_ghostColors
+    return g_ghost1Colors
+
+g_ghost2Colors = [0] * STRIPCOUNT * 3
+g_ghost2_rc = float(0)
+g_ghost2_gc = float(0)
+g_ghost2_bc = float(0)
+
+def generator_Ghost2(dT, fr, sC):
+    global g_ghost2Colors, g_ghost2_rc, g_ghost2_gc, g_ghost2_bc
+
+    fadeSpeed = 0.01 # higher = faster
+    runSpeed = 20    # higher = faster
+
+    for i in range(0, sC):
+        if(int(dT*runSpeed) % sC) == 0:
+            g_ghost2_rc = random.random() #* 0.5 + 0.5
+            g_ghost2_gc = random.random() #* 0.5 + 0.5
+            g_ghost2_bc = random.random() #* 0.5 + 0.5
+        if(int(dT*runSpeed) % sC) == i:
+            z = int((int(dT*runSpeed) % (sC * 3)) / sC)
+            g_ghost2Colors[i*3 + z] += g_ghost2_rc
+            #g_ghost2Colors[i*3 + 1] += g_ghost2_gc
+            #g_ghost2Colors[i*3 + 2] += g_ghost2_bc
+            if(g_ghost2Colors[i*3 + 0] > 1): g_ghost2Colors[i*3 + 0] = 1
+            if(g_ghost2Colors[i*3 + 1] > 1): g_ghost2Colors[i*3 + 1] = 1
+            if(g_ghost2Colors[i*3 + 2] > 1): g_ghost2Colors[i*3 + 2] = 1
+        else:
+            g_ghost2Colors[i*3 + 0] -= fadeSpeed
+            g_ghost2Colors[i*3 + 1] -= fadeSpeed
+            g_ghost2Colors[i*3 + 2] -= fadeSpeed
+            if(g_ghost2Colors[i*3 + 0] < 0): g_ghost2Colors[i*3 + 0] = 0
+            if(g_ghost2Colors[i*3 + 1] < 0): g_ghost2Colors[i*3 + 1] = 0
+            if(g_ghost2Colors[i*3 + 2] < 0): g_ghost2Colors[i*3 + 2] = 0
+
+    return g_ghost2Colors
