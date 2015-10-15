@@ -86,6 +86,10 @@ cueGenerators = {
     "green": {
         "generator": cue_waveGreenCue,
         "startTime": 0
+    },
+    "greenghost": {
+        "generator": cue_ghostGreenCue,
+        "startTime": 0
     }
 }
 
@@ -98,11 +102,13 @@ def tick():
     for generator in generators:
         newColors = generator(currentTime, frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
-            colors[i] = min(colors[i] + newColors[i], 1)
+            colors[i] += newColors[i]
     for (name, generator) in cueGenerators.iteritems():
         newColors = generator["generator"](currentTime, generator["startTime"], frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
-            colors[i] = min(colors[i] + newColors[i], 1)
+            colors[i] += newColors[i]
+
+    print >> sys.stderr, colors
 
 class LightsThread(threading.Thread):
     def run(self):
@@ -159,6 +165,8 @@ def updateGenerators():
             newGenerator.append(generator_Wave)
         if name == "ghost" and value == 1:
             newGenerator.append(generator_Ghost)
+        if name == "random" and value == 1:
+            newGenerator.append(generator_Random)
 
     generators = newGenerator
 
@@ -188,6 +196,11 @@ class AppThread(threading.Thread):
             generatorsByName[name] = value
             updateGenerators()
             return jsonify(generatorsByName)
+
+        @app.route("/cue/<string:name>")
+        def cue(name):
+            cueGenerators[name]["startTime"] = time.time()
+            return name
 
         if __name__ == '__main__':
             app.run(debug=True, use_reloader=False, threaded=True, host='0.0.0.0', port=4000)

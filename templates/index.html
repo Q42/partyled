@@ -74,7 +74,7 @@
                     var triggerCue = function(value) {
                         if (settings["connection"] === "ajax") {
                             $.getJSON("/cue/" + value, function (json) {
-                                renderMaster(json);
+                                console.log(json);
                             });
                         } else if (settings["connection"] === "socketio") {
                             socket.emit("cue", value);
@@ -286,7 +286,12 @@
             <h1>CUES</h1>
             <div class="button" data-name="green" data-type="cue" data-group="3">
                 <div class="label green"></div>
-                <div class="title">GREENFLASH</div>
+                <div class="title">GREENWAVE</div>
+                <div class="type">CUE</div>
+            </div>
+            <div class="button" data-name="greenghost" data-type="cue" data-group="3">
+                <div class="label green"></div>
+                <div class="title">GREENGHOST</div>
                 <div class="type">CUE</div>
             </div>
             <div class="clear"></div>
@@ -329,6 +334,10 @@
             <div class="button" data-name="strobe" data-type="click" data-group="2">
                 <div class="label white"></div>
                 <div class="title">STROBE</div>
+            </div>
+            <div class="button" data-name="random" data-type="click" data-group="2">
+                <div class="label white"></div>
+                <div class="title">RANDOM</div>
             </div>
             <div class="clear"></div>
             <div class="button" data-name="ghost" data-type="click" data-group="3">

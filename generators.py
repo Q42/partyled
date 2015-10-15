@@ -114,6 +114,30 @@ def generator_Green_Burst(dT, fr, sC):
 
     return g_greenBurstColors
 
+g_Random = [0] * STRIPCOUNT * 3
+def generator_Random(dT, fr, sC):
+    for i in range(0, sC):
+
+        g_Random[i*3 + 0] -= 0.06
+        g_Random[i*3 + 1] -= 0.06
+        g_Random[i*3 + 2] -= 0.06
+
+        if random.random() > 0.99:
+            g_Random[i*3 + 0] = 1
+            g_Random[i*3 + 1] = 1
+            g_Random[i*3 + 2] = 1
+
+        # if random.random() > 0.98:
+        #     g_Random[i*3 + 0] = 0
+        #     g_Random[i*3 + 1] = 0
+        #     g_Random[i*3 + 2] = 0
+
+        if(g_Random[i*3 + 0] < 0): g_Random[i*3 + 0] = 0
+        if(g_Random[i*3 + 1] < 0): g_Random[i*3 + 1] = 0
+        if(g_Random[i*3 + 2] < 0): g_Random[i*3 + 2] = 0
+
+    return g_Random
+
 g_ghostColors = [0] * STRIPCOUNT * 3
 def generator_Ghost(dT, fr, sC):
     global g_ghostColors
@@ -139,17 +163,48 @@ def generator_Ghost(dT, fr, sC):
 generator_waveGreenCueColors = [0] * STRIPCOUNT * 3
 def cue_waveGreenCue(dT, startTime, fr, sC):
     global generator_waveGreenCueColors
-    if startTime == 0 or startTime + 1 < time.time():
+
+    length = 1
+
+    if startTime == 0 or (startTime + length) < time.time():
         generator_waveGreenCueColors = [0] * STRIPCOUNT * 3
     else:
-        endTime = startTime + 1
+        endTime = startTime + length
         progress = (dT - startTime) / (endTime - startTime)
-
-        print >> sys.stderr, "prg", progress, 0.5 * math.sin(progress * math.pi)
 
         for i in range(0, sC):
             generator_waveGreenCueColors[i * 3] = 0
-            generator_waveGreenCueColors[i * 3 + 1] = 0.5 * math.sin(progress * math.pi - (10 * i * 0.004))
+            generator_waveGreenCueColors[i * 3 + 1] = max(0, math.sin(2 * progress * math.pi - ((i - 1) * 0.1)))
             generator_waveGreenCueColors[i * 3 + 2] = 0
 
     return generator_waveGreenCueColors
+
+generator_ghostGreenCueColors = [0] * STRIPCOUNT * 3
+def cue_ghostGreenCue(dT, startTime, fr, sC):
+    global generator_ghostGreenCueColors
+
+    length = 1
+    sp = 0.06
+
+    if startTime == 0 or (startTime + length) < time.time():
+        generator_ghostGreenCueColors = [0] * STRIPCOUNT * 3
+    else:
+        endTime = startTime + length
+        progress = (dT - startTime) / (endTime - startTime)
+
+        for i in range(0, sC):
+            c = 1
+            if progress < 0.1:
+                generator_ghostGreenCueColors[i*3 + 0] = 0
+                generator_ghostGreenCueColors[i*3 + 1] = 1
+                generator_ghostGreenCueColors[i*3 + 2] = 0
+            else:
+                generator_ghostGreenCueColors[i*3 + 0] -= sp
+                generator_ghostGreenCueColors[i*3 + 1] -= sp
+                generator_ghostGreenCueColors[i*3 + 2] -= sp
+                if(generator_ghostGreenCueColors[i*3 + 0] < 0): generator_ghostGreenCueColors[i*3 + 0] = 0
+                if(generator_ghostGreenCueColors[i*3 + 1] < 0): generator_ghostGreenCueColors[i*3 + 1] = 0
+                if(generator_ghostGreenCueColors[i*3 + 2] < 0): generator_ghostGreenCueColors[i*3 + 2] = 0
+
+    return generator_ghostGreenCueColors
+

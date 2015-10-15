@@ -58,7 +58,7 @@ var sendTick = function(packet) {
     io.emit('tick', packet);
 };
 
-var tick = _.throttle(sendTick, 10);
+var tick = _.throttle(sendTick, 1);
 
 var process;
 var ledProcess = function() {
