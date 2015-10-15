@@ -51,13 +51,10 @@ frames = 0
 fps = 0
 fpstimer = 0
 
-
 # set a single strip's color.
 #   StripID is 0..STRIPCOUNT
 #   r, g, b is 0..1
-
 def setStripColor(stripID, r, g, b):
-    #print "Setting ", stripID, " to ", r, "/", g, "/", b
     if (PWMAvailable):
         if stripID < 5:
             pwm1.setPWM(stripID * 3 + 0, 0, pwmscale(r))
@@ -68,11 +65,10 @@ def setStripColor(stripID, r, g, b):
             pwm2.setPWM((stripID - 5) * 3 + 1, 0, pwmscale(g))
             pwm2.setPWM((stripID - 5) * 3 + 2, 0, pwmscale(b))
 
-
 # clip and scale a 0..1 input (inclusive) to 0..PWMSCALE
 def pwmscale(val):
-    p = (val ** GAMMA) * PWMSCALE;
     if p < 0: p = 0;
+    p = (val ** GAMMA) * PWMSCALE;
     if p > PWMSCALE - 1: p = PWMSCALE - 1
     return int(p)
 
@@ -159,7 +155,7 @@ def updateGenerators():
 
 class AppThread(threading.Thread):
     def run(self):
-        global MASTEr
+        global MASTER
         app = Flask(__name__)
 
         @app.route("/")
