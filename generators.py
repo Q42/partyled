@@ -13,7 +13,7 @@
 # example of when you might want to use the framecounter
 
 g_scatterColors = [0] * STRIPCOUNT * 3
-def g_Scatter(dT, fr, sC):
+def generator_Scatter(dT, fr, sC):
     global g_scatterColors
     for i in range(0, sC):
         c = 0

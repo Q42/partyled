@@ -14,6 +14,14 @@ try:
 except ImportError, e:
     PWMAvailable = False
 
+IsSimulated = False
+argv = sys.argv
+
+if len(argv) == 2 and argv[1] == "node":
+    IsSimulated = True
+
+print IsSimulated
+
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
 PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
@@ -83,22 +91,29 @@ def tick():
 
 class LightsThread(threading.Thread):
     def run(self):
-        global fps, frames, fpstimer, r, g, b
+        global fps, frames, fpstimer
 
         r = 0
         g = 0
         b = 0
+        string = ""
 
         while True:
-            global colors, r, g, b
+            global colors, r, g, b, string
             tick()
 
             for i in range(0, STRIPCOUNT):
                 r = colors[i * 3] * amp
                 g = colors[i * 3 + 1] * amp
                 b = colors[i * 3 + 2] * amp
+                if IsSimulated:
+                    string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
+                else:
+                    setStripColor(i, r, g, b)
 
-                setStripColor(i, r, g, b)
+            if IsSimulated:
+                print string
+                string = ""
 
             fps += 1
             frames += 1
@@ -112,7 +127,6 @@ def updateGenerators():
     global generatorsByName
     newGenerator = []
     for name, value in generatorsByName.iteritems():
-        print name, value
         if name == "wavegreen" and value == 1:
             newGenerator.append(generator_Wave_Green)
         if name == "waveblue" and value == 1:
@@ -130,18 +144,22 @@ def updateGenerators():
         if name == "wavecolor" and value == 1:
             newGenerator.append(generator_Wave)
 
-    print newGenerator
-
     generators = newGenerator
-
 
 class AppThread(threading.Thread):
     def run(self):
         app = Flask(__name__)
 
         @app.route("/")
-        def hello():
+        def index():
             return render_template('index.html')
+
+        @app.route("/settings")
+        def settings():
+            settingsObj = {
+                "connection": "ajax"
+            }
+            return jsonify(settingsObj)
 
         @app.route("/generator/<string:name>/<int:value>")
         def generator(name, value):
@@ -150,12 +168,35 @@ class AppThread(threading.Thread):
             return jsonify(generatorsByName)
 
         if __name__ == '__main__':
-            app.run(debug=True, use_reloader=False, threaded=True, host='0.0.0.0')
+            app.run(debug=True, use_reloader=False, threaded=True, host='0.0.0.0', port=4000)
+
+class InputThread(threading.Thread):
+    def run(self):
+        global generators
+        global generatorsByName
+        while True:
+            string = raw_input()
+            if string == "e":
+                appThread.join(0)
+                sys.exit()
+
+            setGenerators = string.split("%")
+            for i in range(0, len(setGenerators)):
+                if len(setGenerators[i]) > 1:
+                    switch = setGenerators[i].split("$")
+                    name = switch[0]
+                    value = int(switch[1])
+                    generatorsByName[name] = value
+            updateGenerators()
 
 appThread = AppThread()
+inputThread = InputThread()
 try:
-    appThread.setDaemon(True)
-    appThread.start()
+    if IsSimulated:
+        inputThread.start()
+    else:
+        appThread.setDaemon(True)
+        appThread.start()
 
     lightsThread = LightsThread()
     lightsThread.run()
