@@ -128,6 +128,10 @@ def updateGenerators():
     global generatorsByName
     newGenerator = []
     for name, value in generatorsByName.iteritems():
+        if name == "prog1" and value == 1:
+            newGenerator.append(generator_prog1)
+        if name == "prog2" and value == 1:
+            newGenerator.append(generator_prog2)
         if name == "wavegreen" and value == 1:
             newGenerator.append(generator_Wave_Green)
         if name == "waveblue" and value == 1:
