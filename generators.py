@@ -114,3 +114,24 @@ def generator_Green_Burst(dT, fr, sC):
 
     return g_greenBurstColors
 
+g_ghostColors = [0] * STRIPCOUNT * 3
+def generator_Ghost(dT, fr, sC):
+    global g_ghostColors
+    sp = 0.006
+    for i in range(0, sC):
+        c = 1
+        if(int(dT*10) % 50) == i:
+            z = int(dT*50) % 4
+            if z == 0:
+                g_ghostColors[i*3 + 0] = random.random()
+                g_ghostColors[i*3 + 1] = random.random()
+                g_ghostColors[i*3 + 2] = random.random()
+        else:
+            g_ghostColors[i*3 + 0] -= sp
+            g_ghostColors[i*3 + 1] -= sp
+            g_ghostColors[i*3 + 2] -= sp
+            if(g_ghostColors[i*3 + 0] < 0): g_ghostColors[i*3 + 0] = 0
+            if(g_ghostColors[i*3 + 1] < 0): g_ghostColors[i*3 + 1] = 0
+            if(g_ghostColors[i*3 + 2] < 0): g_ghostColors[i*3 + 2] = 0
+
+    return g_ghostColors

@@ -6,6 +6,7 @@ import time
 import math
 import sys
 from flask import Flask, render_template, jsonify
+import random
 
 PWMAvailable = True
 
@@ -141,6 +142,8 @@ def updateGenerators():
             newGenerator.append(generator_Strobe)
         if name == "wavecolor" and value == 1:
             newGenerator.append(generator_Wave)
+        if name == "ghost" and value == 1:
+            newGenerator.append(generator_Ghost)
 
     generators = newGenerator
 
