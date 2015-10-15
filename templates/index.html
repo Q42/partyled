@@ -71,6 +71,15 @@
                         }
                     };
 
+                    var triggerCue = function(value) {
+                        if (settings["connection"] === "ajax") {
+                            $.getJSON("/cue/" + value, function (json) {
+                                renderMaster(json);
+                            });
+                        } else if (settings["connection"] === "socketio") {
+                            socket.emit("cue", value);
+                        }
+                    };
 
                     $(".control-panel .button[data-type=click]").click(function () {
                         var el = $(this);
@@ -103,6 +112,13 @@
                     }).mousedown(function () {
                         setSwitch($(this).attr("data-name"), true);
                     });
+
+                    $(".control-panel .button[data-type=cue]").click(function() {
+                        var el = $(this);
+                        var name = el.attr("data-name");
+                        el.addClass("active");
+                        triggerCue(name);
+                    });
                 });
             });
         </script>
@@ -127,10 +143,19 @@
             #simulator {
                 width: 100%;
                 margin-bottom: 50px;
+                position: fixed;
+                top:0;
+                left:0;
+                right:0;
+                z-index: 10000;
             }
 
             #simulator td{
                 width: 50px;
+                height: 200px;
+            }
+
+            .header {
                 height: 200px;
             }
 
@@ -139,6 +164,14 @@
                 width: 550px;
                 margin: 0 auto;
                 clear: both;
+                margin-bottom: 10px;
+            }
+
+            .control-panel h1 {
+                color: white;
+                text-align: left;
+                font-weight: 100;
+                margin-left:10px;
             }
 
             .button {
@@ -149,6 +182,7 @@
                 float:left;
                 box-shadow: inset 0 0 1px black;
                 border-radius: 2px;
+                position: relative;
             }
 
             .button.active {
@@ -169,6 +203,14 @@
                 opacity: 0.5;
                 box-shadow: inset 0 0 1px rgba(0,0,0,0.6);
 
+            }
+
+            .button .type {
+                color: red;
+                font-size: 10px;
+                position: absolute;
+                bottom: 5px;
+                left: 5px;
             }
 
             .button.active .label {
@@ -215,8 +257,9 @@
                 <td></td>
             </tr>
         </table>
-
+        <div class="header"></div>
         <div class="control-panel">
+            <h1>MASTER</h1>
             <div class="button active" data-name="master" data-value="1" data-type="master" data-group="0">
                 <div class="label white"></div>
                 <div class="title">MASTER F</div>
@@ -237,9 +280,19 @@
                 <div class="label white"></div>
                 <div class="title">BLACKOUT</div>
             </div>
+            <div class="clear"></div>
         </div>
-
         <div class="control-panel">
+            <h1>CUES</h1>
+            <div class="button" data-name="green" data-type="cue" data-group="3">
+                <div class="label green"></div>
+                <div class="title">GREENFLASH</div>
+                <div class="type">CUE</div>
+            </div>
+            <div class="clear"></div>
+        </div>
+        <div class="control-panel">
+            <h1>SCENES</h1>
             <div class="button" data-name="wavegreen" data-type="click" data-group="1">
                 <div class="label green"></div>
                 <div class="title">GREEN WAVE</div>

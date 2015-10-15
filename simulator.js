@@ -48,7 +48,10 @@ io.on('connection', function (socket) {
     });
     socket.on("master", function(value) {
         process.stdin.write("m;"+value+"\n")
-    })
+    });
+    socket.on("cue", function(value) {
+        process.stdin.write("c;"+value+"\n")
+    });
 });
 
 var sendTick = function(packet) {

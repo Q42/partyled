@@ -82,11 +82,12 @@ generators = []
 generatorsByName = {}
 currentTime = time.time()
 
-standardGenerators = [
-    generator_waveGreenCue
-]
-
-startWaveGreenCue()
+cueGenerators = {
+    "green": {
+        "generator": cue_waveGreenCue,
+        "startTime": 0
+    }
+}
 
 def tick():
     global colors
@@ -98,8 +99,8 @@ def tick():
         newColors = generator(currentTime, frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
             colors[i] = min(colors[i] + newColors[i], 1)
-    for generator in standardGenerators:
-        newColors = generator(currentTime, frames, STRIPCOUNT)
+    for (name, generator) in cueGenerators.iteritems():
+        newColors = generator["generator"](currentTime, generator["startTime"], frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
             colors[i] = min(colors[i] + newColors[i], 1)
 
@@ -214,6 +215,9 @@ class InputThread(threading.Thread):
                 updateGenerators()
             if command[0] == "m":
                 MASTER = float(command[1])
+            if command[0] == "c":
+                cueGenerators[command[1]]["startTime"] = time.time()
+
 
 
 appThread = AppThread()

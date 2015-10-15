@@ -137,15 +137,13 @@ def generator_Ghost(dT, fr, sC):
     return g_ghostColors
 
 generator_waveGreenCueColors = [0] * STRIPCOUNT * 3
-generator_waveGreenCueStared = 0
-generator_waveGreenCueLength = 1 # seconds
-def generator_waveGreenCue(dT, fr, sC):
-    global generator_waveGreenCueColors, generator_waveGreenCueStared, generator_waveGreenCueLength
-    if generator_waveGreenCueStared == 0 or generator_waveGreenCueStared + generator_waveGreenCueLength < time.time():
+def cue_waveGreenCue(dT, startTime, fr, sC):
+    global generator_waveGreenCueColors
+    if startTime == 0 or startTime + 1 < time.time():
         generator_waveGreenCueColors = [0] * STRIPCOUNT * 3
     else:
-        endTime = generator_waveGreenCueStared + generator_waveGreenCueLength
-        progress = (dT - generator_waveGreenCueStared) / (endTime - generator_waveGreenCueStared)
+        endTime = startTime + 1
+        progress = (dT - startTime) / (endTime - startTime)
 
         print >> sys.stderr, "prg", progress, 0.5 * math.sin(progress * math.pi)
 
@@ -155,7 +153,3 @@ def generator_waveGreenCue(dT, fr, sC):
             generator_waveGreenCueColors[i * 3 + 2] = 0
 
     return generator_waveGreenCueColors
-
-def startWaveGreenCue():
-    global generator_waveGreenCueStared
-    generator_waveGreenCueStared = time.time()
