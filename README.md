@@ -48,8 +48,17 @@ Party LED system in 020
 
 # OPERATE
 
-* Run de simulator:
+* Start de server plus web UI: `./run_simulator.sh`
 
-```
-./run_simulator.sh
-```
+# PLUGINS TOEVOEGEN
+
+## Generatorplugins
+Dit zijn de plugins die op ca 50fps de LED-strips aansturen. Duplicate 'generators/progression1.py' naar je eigen file onder generators. De *enige* dingen die je hoeft aan te passen:
+
+  1. De inhoud (niet de naam of signatuur) van de functie `generator`
+  2. De naam van de generator in de laatste regel van de `setup` functie
+  3. Optioneel, als je niet via de interne API werkt, ervoor zorgen dat er een knop is in de UI (index.html)
+
+Jouw generator doet in principe maar één ding: de array `rgb` vullen met 3 maal het aantal LED-strips aan waarden van 0 tot 1. 0 = uit, 1 = vol aan. De array eerst de waarden R, G, en B voor strip 0, dan RGB voor strip 1, etc. Bij 10 strips dus 30 floats, 10 x RGB achter elkaar.
+
+**De generator wordt ca 50x per seconde aangeroepen op een Raspberry Pi. Zorg ervoor dat je code heel snel is, en heel stabiel in uitvoertijd. 1ms per call is al ruim. Voorkom dat de garbage collector moet langskomen.**

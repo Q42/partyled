@@ -1,20 +1,23 @@
 #!/usr/bin/python
 # coding=utf-8
 
-import threading
-import time
-import math
-import sys
+import threading, time, math, sys, os, random
 from flask import Flask, render_template, jsonify
-import random
+from functools import partial
+from pluginbase import PluginBase
 
-PWMAvailable = True
+here = os.path.abspath(os.path.dirname(__file__))
+get_path = partial(os.path.join, here)
+
+PWMAvailable = False
 
 try:
+    sys.path.append(get_path('./drivers/'))
     from Adafruit_PWM_Servo_Driver import PWM
+    PWMAvailable = True
 except ImportError, e:
-    print(e)
-    PWMAvailable = False
+    print "Cannot initialize PWM, if you're on a Mac, try using the simulator"
+    print "Exception: ", (e)
 
 IsSimulated = False
 argv = sys.argv
@@ -30,10 +33,32 @@ colors = [0] * STRIPCOUNT * 3
 r = 0
 g = 0
 b = 0
+frames = 0
+fps = 0
+fpstimer = 0
+amp = 1
+generators = []
+generatorsByName = {}
+generatorList = {}
+currentTime = time.time()
 
 print "==== PARTYLED ====\nSimulation: ", IsSimulated
 
-execfile("generators.py")
+class wrapper_Application(object):
+    def register_generator(self, name, generator):
+        global generatorList
+        generatorList[name] = generator
+
+wrapperApp = wrapper_Application()
+
+generatorBase = PluginBase(package='partyled.generatorplugins')
+generatorSource = generatorBase.make_plugin_source(searchpath=[get_path('./generators/')])
+
+for plugin_name in generatorSource.list_plugins():
+    plugin = generatorSource.load_plugin(plugin_name)
+    plugin.setup(wrapperApp, STRIPCOUNT)
+
+print "! Generator plugins: ", generatorList.items()
 
 def setupPWM():
     pwm1 = PWM(0x40)  # PCA9685 board one
@@ -46,18 +71,10 @@ def setupPWM():
 if (PWMAvailable):
     (pwm1, pwm2) = setupPWM()
 
-# globals (to prevent reallocating/GC)fps = 0
-frames = 0
-fps = 0
-fpstimer = 0
-
-
 # set a single strip's color.
 #   StripID is 0..STRIPCOUNT
 #   r, g, b is 0..1
-
 def setStripColor(stripID, r, g, b):
-    #print "Setting ", stripID, " to ", r, "/", g, "/", b
     if (PWMAvailable):
         if stripID < 5:
             pwm1.setPWM(stripID * 3 + 0, 0, pwmscale(r))
@@ -68,19 +85,12 @@ def setStripColor(stripID, r, g, b):
             pwm2.setPWM((stripID - 5) * 3 + 1, 0, pwmscale(g))
             pwm2.setPWM((stripID - 5) * 3 + 2, 0, pwmscale(b))
 
-
 # clip and scale a 0..1 input (inclusive) to 0..PWMSCALE
 def pwmscale(val):
-    p = (val ** GAMMA) * PWMSCALE;
     if p < 0: p = 0;
+    p = (val ** GAMMA) * PWMSCALE;
     if p > PWMSCALE - 1: p = PWMSCALE - 1
     return int(p)
-
-amp = 1
-
-generators = []
-generatorsByName = {}
-currentTime = time.time()
 
 def tick():
     global colors
@@ -89,9 +99,9 @@ def tick():
 
     currentTime = time.time()
     for generator in generators:
-        newColors = generator(currentTime, frames, STRIPCOUNT)
+        newColors = generator(currentTime, frames)
         for i in range(0, STRIPCOUNT*3):
-            colors[i] = min(colors[i] + newColors[i], 1)
+            colors[i] = min(colors[i] + max(newColors[i],0), 1)
 
 class LightsThread(threading.Thread):
     def run(self):
@@ -105,7 +115,7 @@ class LightsThread(threading.Thread):
                 string = ""
 
             for i in range(0, STRIPCOUNT):
-                r = min(colors[i * 3] * amp * MASTER, 1)
+                r = min(colors[i * 3]     * amp * MASTER, 1)
                 g = min(colors[i * 3 + 1] * amp * MASTER, 1)
                 b = min(colors[i * 3 + 2] * amp * MASTER, 1)
                 if IsSimulated:
@@ -127,39 +137,17 @@ def updateGenerators():
     global generators
     global generatorsByName
     newGenerator = []
-    for name, value in generatorsByName.iteritems():
-        if name == "prog1" and value == 1:
-            newGenerator.append(generator_prog1)
-        if name == "prog2" and value == 1:
-            newGenerator.append(generator_prog2)
-        if name == "wavegreen" and value == 1:
-            newGenerator.append(generator_Wave_Green)
-        if name == "waveblue" and value == 1:
-            newGenerator.append(generator_Wave_Blue)
-        if name == "wavepurple" and value == 1:
-            newGenerator.append(generator_Wave_Purple)
-        if name == "wavered" and value == 1:
-            newGenerator.append(generator_Wave_Red)
-        if name == "wavewhite" and value == 1:
-            newGenerator.append(generator_Wave_White)
-        if name == "scatter" and value == 1:
-            newGenerator.append(generator_Scatter)
-        if name == "strobe" and value == 1:
-            newGenerator.append(generator_Strobe)
-        if name == "wavecolor" and value == 1:
-            newGenerator.append(generator_Wave)
-        if name == "ghost1" and value == 1:
-            newGenerator.append(generator_Ghost1)
-        if name == "ghost2" and value == 1:
-            newGenerator.append(generator_Ghost2)
-        if name == "ghost3" and value == 1:
-            newGenerator.append(generator_Ghost3)
+
+    for name, oper in generatorList.items():
+        if name in generatorsByName:
+            if generatorsByName[name] > 0:
+                newGenerator.append(oper)
 
     generators = newGenerator
 
 class AppThread(threading.Thread):
     def run(self):
-        global MASTEr
+        global MASTER
         app = Flask(__name__)
 
         @app.route("/")
@@ -214,13 +202,13 @@ class InputThread(threading.Thread):
 
 appThread = AppThread()
 inputThread = InputThread()
+
 try:
     if IsSimulated:
         inputThread.start()
     else:
         appThread.setDaemon(True)
         appThread.start()
-
     lightsThread = LightsThread()
     lightsThread.run()
 except KeyboardInterrupt:
