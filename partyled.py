@@ -82,6 +82,12 @@ generators = []
 generatorsByName = {}
 currentTime = time.time()
 
+standardGenerators = [
+    generator_waveGreenCue
+]
+
+startWaveGreenCue()
+
 def tick():
     global colors
     for i in range(0, STRIPCOUNT*3):
@@ -89,6 +95,10 @@ def tick():
 
     currentTime = time.time()
     for generator in generators:
+        newColors = generator(currentTime, frames, STRIPCOUNT)
+        for i in range(0, STRIPCOUNT*3):
+            colors[i] = min(colors[i] + newColors[i], 1)
+    for generator in standardGenerators:
         newColors = generator(currentTime, frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
             colors[i] = min(colors[i] + newColors[i], 1)
@@ -123,10 +133,12 @@ class LightsThread(threading.Thread):
                 fps = 0
                 fpstimer = time.time()
 
+
 def updateGenerators():
     global generators
     global generatorsByName
     newGenerator = []
+
     for name, value in generatorsByName.iteritems():
         if name == "wavegreen" and value == 1:
             newGenerator.append(generator_Wave_Green)

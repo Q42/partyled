@@ -89,8 +89,8 @@ var ledProcess = function() {
 ledProcess();
 
 fs.watch(".", function (event, filename) {
-    if (filename !== "partyled.py") return;
-    if (filename !== "generators.py") return;
+    console.log("restart", event, filename);
+    if (!(filename === "partyled.py" || filename === "generators.py")) return;
     process.kill();
     ledProcess();
 });
