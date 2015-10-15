@@ -27,6 +27,11 @@ PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
 MASTER = float(1)
 colors = [0] * STRIPCOUNT * 3
+r = 0
+g = 0
+b = 0
+
+#print "==== PARTYLED ====\nSimulation: ", IsSimulated
 
 execfile("generators.py")
 
@@ -73,13 +78,8 @@ def pwmscale(val):
 
 amp = 1
 
-<<<<<<< HEAD
-generators = [generator_Wave_White]
-
-=======
 generators = []
 generatorsByName = {}
->>>>>>> webserver
 currentTime = time.time()
 
 def tick():
@@ -89,59 +89,20 @@ def tick():
 
     currentTime = time.time()
     for generator in generators:
-<<<<<<< HEAD
-        generator(currentTime, frames, STRIPCOUNT)
-
-    generator_Green_Burst(currentTime, frames, STRIPCOUNT)
-
-def sleepFromFPS(currentFps):
-        return
-	# if fps < 60:
-	# 	return
-
-	# fw = (1.0 / 60)
-	# fc = (1.0 / currentFps)
-
-	# sleepTime = fw - fc
-
-	# print "1,FPS sleep: ", fw, fc, currentFps, sleepTime, ";"
-
-	# time.sleep(0.001)
-=======
         newColors = generator(currentTime, frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
             colors[i] = min(colors[i] + newColors[i], 1)
->>>>>>> webserver
 
 class LightsThread(threading.Thread):
     def run(self):
-        global fps, frames, fpstimer
-
-        r = 0
-        g = 0
-        b = 0
+        global fps, frames, fpstimer, colors, r, g, b
 
         while True:
-            global colors, r, g, b
             tick()
 
-<<<<<<< HEAD
-            # string = ""
-            for i in range(0, STRIPCOUNT):
-                r = colors[i * 3] * amp
-                g = colors[i * 3 + 1] * amp
-                b = colors[i * 3 + 2] * amp
-
-                setStripColor(i, r, g, b)
-                # string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
-
-            # print string for capture with node
-            # print string
-=======
             if IsSimulated:
                 time.sleep(0.01)
                 string = ""
->>>>>>> webserver
 
             for i in range(0, STRIPCOUNT):
                 r = min(colors[i * 3] * amp * MASTER, 1)
@@ -225,53 +186,6 @@ class InputThread(threading.Thread):
         while True:
             string = raw_input()
             if string == "e":
-<<<<<<< HEAD
-            	process.exit()
-
-            setGenerators = string.split("%")
-
-            newGenerator = []
-
-            for i in range(0, len(setGenerators)):
-                if len(setGenerators[i]) > 1:
-                    switch = setGenerators[i].split("$")
-                    name = switch[0]
-                    if name == "wavegreen" and switch[1] == '1':
-                        newGenerator.append(generator_Wave_Green)
-                    if name == "waveblue" and switch[1] == '1':
-                        newGenerator.append(generator_Wave_Blue)
-                    if name == "wavepurple" and switch[1] == '1':
-                        newGenerator.append(generator_Wave_Purple)
-                    if name == "wavered" and switch[1] == '1':
-                        newGenerator.append(generator_Wave_Red)
-                    if name == "wavewhite" and switch[1] == '1':
-                        newGenerator.append(generator_Wave_White)
-                    if name == "scatter" and switch[1] == '1':
-                        newGenerator.append(generator_Scatter)
-                    if name == "strobe" and switch[1] == '1':
-                        newGenerator.append(generator_Strobe)
-                    if name == "wavecolor" and switch[1] == '1':
-                        newGenerator.append(generator_Wave)
-
-            generators = newGenerator
-
-
-def signal_handler(signal, frame):
-        print('Breaking')
-        lightsThread.stop()
-        inputThread.stop()
-        sys.exit(0)
-
-signal.signal(signal.SIGINT, signal_handler)
-
-
-lightsThread = LightsThread()
-#lightsThread.start()
-inputThread = InputThread()
-inputThread.start()
-
-lightsThread.run()
-=======
                 appThread.join(0)
                 sys.exit()
 
@@ -305,5 +219,3 @@ except KeyboardInterrupt:
     print "Ctrl-c pressed ..."
     appThread.join(0)
     sys.exit()
-
->>>>>>> webserver

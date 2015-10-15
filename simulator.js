@@ -23,7 +23,7 @@ var sendSwitch = function() {
     Object.keys(switches).forEach(function(key) {
         command += key + "$" + (switches[key] ? 1 : 0) + "%"
     });
-    console.log(command);
+    console.log("sending command: " + command);
     if (process) process.stdin.write(command+"\n");
 };
 
@@ -96,4 +96,3 @@ fs.watch(".", function (event, filename) {
     process.kill();
     ledProcess();
 });
-
