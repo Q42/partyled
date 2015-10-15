@@ -7,13 +7,19 @@ var server = app.listen(4000);
 var io = require('socket.io').listen(server);
 
 app.get("/", function (req, res) {
-    res.sendFile(__dirname + "/public/index.html");
+    res.sendFile(__dirname + "/templates/index.html");
 });
 
+app.get("/settings", function(req, res) {
+    res.send({"connection": "socketio"});
+});
+
+
 var switches = {};
+var master = 1;
 
 var sendSwitch = function() {
-    var command = "";
+    var command = "v;";
     Object.keys(switches).forEach(function(key) {
         command += key + "$" + (switches[key] ? 1 : 0) + "%"
     });
@@ -23,6 +29,7 @@ var sendSwitch = function() {
 
 io.on('connection', function (socket) {
     socket.emit("switches", switches);
+    socket.emit("master", master);
     socket.on("switch", function(pattern) {
         if (switches[pattern] === undefined) {
             switches[pattern] = true
@@ -39,6 +46,10 @@ io.on('connection', function (socket) {
         sendSwitch();
         io.emit("switches", switches);
     });
+    socket.on("master", function(value) {
+        console.log(value);
+        process.stdin.write("m;"+value+"\n")
+    })
 });
 
 var sendTick = function(packet) {
@@ -66,7 +77,6 @@ var ledProcess = function() {
 
             return i
         });
-
         tick(packet);
     });
 
@@ -81,9 +91,9 @@ ledProcess();
 
 fs.watch(".", function (event, filename) {
     if (filename !== "partyled.py") return;
+    if (filename !== "generators.py") return;
     console.log(event, filename);
     process.kill();
     ledProcess();
 });
-
 

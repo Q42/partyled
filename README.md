@@ -45,3 +45,11 @@ Party LED system in 020
   * check dat het sneller is: `sudo reboot` en dan `dmesg|grep baudrate` moet 1200000 laten zien
 * `git clone https://github.com/Q42/partyled && cd partyled`
 * `nohup python partyled.py &`
+
+# OPERATE
+
+* Run de simulator:
+
+```
+./run_simulator.sh
+```

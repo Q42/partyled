@@ -5,11 +5,8 @@ import threading
 import time
 import math
 import sys
-import platform
-import os
-import socket
-import fileinput
-import signal
+from flask import Flask, render_template, jsonify
+import random
 
 PWMAvailable = True
 
@@ -19,12 +16,19 @@ except ImportError, e:
     print(e)
     PWMAvailable = False
 
+IsSimulated = False
+argv = sys.argv
+
+if len(argv) == 2 and argv[1] == "node":
+    IsSimulated = True
+
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
 PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
-
+MASTER = float(1)
 colors = [0] * STRIPCOUNT * 3
 
+execfile("generators.py")
 
 def setupPWM():
     pwm1 = PWM(0x40)  # PCA9685 board one
@@ -67,100 +71,31 @@ def pwmscale(val):
     if p > PWMSCALE - 1: p = PWMSCALE - 1
     return int(p)
 
-
-# --------------- GENERATORS ------------------------------
-# these actually drive the LEDs. TODO make these into actual plugins
-# IN:  dT = time, use this as the sole driver for your output whenever possible
-#      frames = framecounter, ONLY use this when you have strobe-like effects
-#         that need precise frame-timings not to look odd. The reason is that
-#         frame timings can change as hardware changes! right now, it's ~50fps.
-#      sC = strip count, how many strips are connected.
-# OUT: none, but the function is expected to mutate the values of colors[0..3*sC]
-#      with 0..1 r/g/b/r/g/b/r/g/b etc values
-
-# generator: fast/hard on/off walk
-# example of when you might want to use the framecounter
-def generator_Scatter(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        c = 0
-        if fr % 10 == i: c = 1
-        colors[i * 3 + 0] += c
-        colors[i * 3 + 1] += c
-        colors[i * 3 + 2] += c
-
-def generator_Strobe(dT, fr, sC):
-    if fr % 2:
-        v = 1
-    else:
-        v = 0
-
-    for i in range(0, sC):
-        colors[i * 3 + 0] = v
-        colors[i * 3 + 1] = v
-        colors[i * 3 + 2] = v
-
-# generator: smooth grayscale sinewave across strips
-def generator_Wave(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
-        colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
-
-
-def generator_Wave_Green(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-
-def generator_Wave_Blue(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-
-def generator_Wave_Purple(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-
-def generator_Wave_Red(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-
-def generator_Wave_White(dT, fr, sC):
-    global colors
-    for i in range(0, sC):
-        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-
-def generator_ON(dT, fr, sC):
-    for i in range(0, sC * 3):
-        colors[i] = 1
-
-def generator_Green_Burst(dT, fr, sC):
-    for i in range(0, sC * 3):
-        colors[i] += 0
-
 amp = 1
 
+<<<<<<< HEAD
 generators = [generator_Wave_White]
 
+=======
+generators = []
+generatorsByName = {}
+>>>>>>> webserver
 currentTime = time.time()
+
 def tick():
     global colors
-    colors = [0] * STRIPCOUNT * 3
+    for i in range(0, STRIPCOUNT*3):
+        colors[i] = 0
+
     currentTime = time.time()
     for generator in generators:
+<<<<<<< HEAD
         generator(currentTime, frames, STRIPCOUNT)
 
     generator_Green_Burst(currentTime, frames, STRIPCOUNT)
 
 def sleepFromFPS(currentFps):
-        return	
+        return
 	# if fps < 60:
 	# 	return
 
@@ -172,20 +107,25 @@ def sleepFromFPS(currentFps):
 	# print "1,FPS sleep: ", fw, fc, currentFps, sleepTime, ";"
 
 	# time.sleep(0.001)
+=======
+        newColors = generator(currentTime, frames, STRIPCOUNT)
+        for i in range(0, STRIPCOUNT*3):
+            colors[i] = min(colors[i] + newColors[i], 1)
+>>>>>>> webserver
 
 class LightsThread(threading.Thread):
     def run(self):
-        global fps, frames, fpstimer, r, g, b
+        global fps, frames, fpstimer
 
         r = 0
         g = 0
         b = 0
-        currentFPS = 0
 
         while True:
             global colors, r, g, b
             tick()
 
+<<<<<<< HEAD
             # string = ""
             for i in range(0, STRIPCOUNT):
                 r = colors[i * 3] * amp
@@ -197,24 +137,95 @@ class LightsThread(threading.Thread):
 
             # print string for capture with node
             # print string
+=======
+            if IsSimulated:
+                time.sleep(0.01)
+                string = ""
+>>>>>>> webserver
 
-            sleepFromFPS(fps)
+            for i in range(0, STRIPCOUNT):
+                r = min(colors[i * 3] * amp * MASTER, 1)
+                g = min(colors[i * 3 + 1] * amp * MASTER, 1)
+                b = min(colors[i * 3 + 2] * amp * MASTER, 1)
+                if IsSimulated:
+                    string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
+                else:
+                    setStripColor(i, r, g, b)
+
+            if IsSimulated:
+                print string
+                sys.stdout.flush()
 
             fps += 1
             frames += 1
             if time.time() > fpstimer + 1.0:
-            	currentFPS = fps
-                print "1,FPS: ", fps, ";"
                 fps = 0
                 fpstimer = time.time()
 
+def updateGenerators():
+    global generators
+    global generatorsByName
+    newGenerator = []
+    for name, value in generatorsByName.iteritems():
+        if name == "wavegreen" and value == 1:
+            newGenerator.append(generator_Wave_Green)
+        if name == "waveblue" and value == 1:
+            newGenerator.append(generator_Wave_Blue)
+        if name == "wavepurple" and value == 1:
+            newGenerator.append(generator_Wave_Purple)
+        if name == "wavered" and value == 1:
+            newGenerator.append(generator_Wave_Red)
+        if name == "wavewhite" and value == 1:
+            newGenerator.append(generator_Wave_White)
+        if name == "scatter" and value == 1:
+            newGenerator.append(generator_Scatter)
+        if name == "strobe" and value == 1:
+            newGenerator.append(generator_Strobe)
+        if name == "wavecolor" and value == 1:
+            newGenerator.append(generator_Wave)
+        if name == "ghost" and value == 1:
+            newGenerator.append(generator_Ghost)
+
+    generators = newGenerator
+
+class AppThread(threading.Thread):
+    def run(self):
+        global MASTEr
+        app = Flask(__name__)
+
+        @app.route("/")
+        def index():
+            return render_template('index.html')
+
+        @app.route("/settings")
+        def settings():
+            settingsObj = {
+                "connection": "ajax"
+            }
+            return jsonify(settingsObj)
+
+        @app.route("/master/<string:value>")
+        def master(value):
+            MASTER = float(value)
+            return MASTER
+
+        @app.route("/generator/<string:name>/<int:value>")
+        def generator(name, value):
+            generatorsByName[name] = value
+            updateGenerators()
+            return jsonify(generatorsByName)
+
+        if __name__ == '__main__':
+            app.run(debug=True, use_reloader=False, threaded=True, host='0.0.0.0', port=4000)
 
 class InputThread(threading.Thread):
     def run(self):
-        global generators
+        global generators, generatorsByName, MASTER
+
         while True:
             string = raw_input()
             if string == "e":
+<<<<<<< HEAD
             	process.exit()
 
             setGenerators = string.split("%")
@@ -260,3 +271,39 @@ inputThread = InputThread()
 inputThread.start()
 
 lightsThread.run()
+=======
+                appThread.join(0)
+                sys.exit()
+
+            command = string.split(";")
+
+            if command[0] == "v":
+                setGenerators = command[1].split("%")
+                for i in range(0, len(setGenerators)):
+                    if len(setGenerators[i]) > 1:
+                        switch = setGenerators[i].split("$")
+                        name = switch[0]
+                        value = int(switch[1])
+                        generatorsByName[name] = value
+                updateGenerators()
+            if command[0] == "m":
+                MASTER = float(command[1])
+
+
+appThread = AppThread()
+inputThread = InputThread()
+try:
+    if IsSimulated:
+        inputThread.start()
+    else:
+        appThread.setDaemon(True)
+        appThread.start()
+
+    lightsThread = LightsThread()
+    lightsThread.run()
+except KeyboardInterrupt:
+    print "Ctrl-c pressed ..."
+    appThread.join(0)
+    sys.exit()
+
+>>>>>>> webserver

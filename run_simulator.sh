@@ -1,1 +1,2 @@
-node simulator/simulator.js
+npm install
+node simulator.js
