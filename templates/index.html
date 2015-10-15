@@ -93,14 +93,9 @@
 
                         if (to) {
                             $(".button[data-type=master]").removeClass("active");
-                        }
-
-                        setMaster($(this).attr("data-value"));
-                        if (to) {
                             el.addClass("active");
-                        } else {
-                            el.removeClass("active");
                         }
+                        setMaster($(this).attr("data-value"));
                     });
 
                     $(".control-panel .button[data-type=hold]").mouseup(function () {
@@ -234,7 +229,7 @@
                 <div class="label white"></div>
                 <div class="title">MASTER 50%</div>
             </div>
-            <div class="button" data-name="master" data-value="0.5" data-type="master" data-group="0">
+            <div class="button" data-name="master" data-value="0.25" data-type="master" data-group="0">
                 <div class="label white"></div>
                 <div class="title">MASTER 25%</div>
             </div>

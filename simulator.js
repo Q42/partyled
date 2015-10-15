@@ -23,7 +23,6 @@ var sendSwitch = function() {
     Object.keys(switches).forEach(function(key) {
         command += key + "$" + (switches[key] ? 1 : 0) + "%"
     });
-    console.log(command);
     if (process) process.stdin.write(command+"\n");
 };
 
@@ -47,7 +46,6 @@ io.on('connection', function (socket) {
         io.emit("switches", switches);
     });
     socket.on("master", function(value) {
-        console.log(value);
         process.stdin.write("m;"+value+"\n")
     })
 });
@@ -91,8 +89,7 @@ ledProcess();
 
 fs.watch(".", function (event, filename) {
     if (filename !== "partyled.py") return;
-    if (filename !== "generators.py") return;
-    console.log(event, filename);
+    if (filename !== "generators.py") return;co
     process.kill();
     ledProcess();
 });
