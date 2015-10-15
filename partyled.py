@@ -20,8 +20,6 @@ argv = sys.argv
 if len(argv) == 2 and argv[1] == "node":
     IsSimulated = True
 
-print IsSimulated
-
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
 PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
@@ -70,8 +68,6 @@ def pwmscale(val):
     if p > PWMSCALE - 1: p = PWMSCALE - 1
     return int(p)
 
-
-
 amp = 1
 
 generators = []
@@ -87,7 +83,7 @@ def tick():
     for generator in generators:
         newColors = generator(currentTime, frames, STRIPCOUNT)
         for i in range(0, STRIPCOUNT*3):
-            colors[i] += newColors[i]
+            colors[i] = min(colors[i] + newColors[i], 1)
 
 class LightsThread(threading.Thread):
     def run(self):
@@ -96,16 +92,19 @@ class LightsThread(threading.Thread):
         r = 0
         g = 0
         b = 0
-        string = ""
 
         while True:
-            global colors, r, g, b, string
+            global colors, r, g, b
             tick()
 
+            if IsSimulated:
+                time.sleep(0.01)
+                string = ""
+
             for i in range(0, STRIPCOUNT):
-                r = colors[i * 3] * amp
-                g = colors[i * 3 + 1] * amp
-                b = colors[i * 3 + 2] * amp
+                r = min(colors[i * 3] * amp, 1)
+                g = min(colors[i * 3 + 1] * amp, 1)
+                b = min(colors[i * 3 + 2] * amp, 1)
                 if IsSimulated:
                     string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
                 else:
@@ -113,12 +112,11 @@ class LightsThread(threading.Thread):
 
             if IsSimulated:
                 print string
-                string = ""
+                sys.stdout.flush()
 
             fps += 1
             frames += 1
             if time.time() > fpstimer + 1.0:
-                print "1,FPS: ", fps, ";"
                 fps = 0
                 fpstimer = time.time()
 

@@ -44,9 +44,9 @@ g_waveColors = [0] * STRIPCOUNT * 3
 def generator_Wave(dT, fr, sC):
     global g_waveColors
     for i in range(0, sC):
-        g_waveColors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
-        g_waveColors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        g_waveColors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
+        g_waveColors[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.2 + i * 1.6)
+        g_waveColors[i * 3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveColors[i * 3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.6 + i * 1.6)
 
     return g_waveColors
 
@@ -54,15 +54,19 @@ g_waveGreen = [0] * STRIPCOUNT * 3
 def generator_Wave_Green(dT, fr, sC):
     global g_waveGreen
     for i in range(0, sC):
-        g_waveGreen[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveGreen[i * 3] = 0
+        g_waveGreen[i * 3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveGreen[i * 3 + 2] = 0
 
     return g_waveGreen
 
 g_waveBlue = [0] * STRIPCOUNT * 3
 def generator_Wave_Blue(dT, fr, sC):
-    global g_waveGreen
+    global g_waveBlue
     for i in range(0, sC):
-        g_waveGreen[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveGreen[i * 3 ] = 0
+        g_waveGreen[i * 3 + 1] = 0
+        g_waveGreen[i * 3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
     return g_waveGreen
 
@@ -70,8 +74,9 @@ g_wavePurple = [0] * STRIPCOUNT * 3
 def generator_Wave_Purple(dT, fr, sC):
     global g_wavePurple
     for i in range(0, sC):
-        g_wavePurple[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        g_wavePurple[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_wavePurple[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_wavePurple[i * 3 + 1] = 0
+        g_wavePurple[i * 3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
     return g_wavePurple
 
@@ -79,7 +84,7 @@ g_waveRed = [0] * STRIPCOUNT * 3
 def generator_Wave_Red(dT, fr, sC):
     global g_waveRed
     for i in range(0, sC):
-        g_waveRed[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveRed[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
     return g_waveRed
 
@@ -87,9 +92,9 @@ g_waveWhite = [0] * STRIPCOUNT * 3
 def generator_Wave_White(dT, fr, sC):
     global g_waveWhite
     for i in range(0, sC):
-        colors[i * 3 + 0] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        colors[i * 3 + 1] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
-        colors[i * 3 + 2] += 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveWhite[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveWhite[i * 3 + 1] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
+        g_waveWhite[i * 3 + 2] = 0.5 + 0.5 * math.sin(dT * 5.4 + i * 1.6)
 
     return g_waveWhite
 

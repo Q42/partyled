@@ -71,7 +71,6 @@ var ledProcess = function() {
 
             return i
         });
-
         tick(packet);
     });
 
@@ -86,6 +85,7 @@ ledProcess();
 
 fs.watch(".", function (event, filename) {
     if (filename !== "partyled.py") return;
+    if (filename !== "generators.py") return;
     console.log(event, filename);
     process.kill();
     ledProcess();

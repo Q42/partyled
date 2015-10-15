@@ -50,7 +50,6 @@
                     var setSwitch = function (name, value) {
                         if (settings["connection"] === "ajax") {
                             $.getJSON("/generator/" + name + "/" + (value ? 1 : 0), function (json) {
-                                console.log(json);
                                 renderSwitches(json);
                             });
                         } else if (settings["connection"] === "socketio") {
