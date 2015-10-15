@@ -24,7 +24,7 @@ if len(argv) == 2 and argv[1] == "node":
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
 PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
-
+MASTER = float(1)
 colors = [0] * STRIPCOUNT * 3
 
 execfile("generators.py")
@@ -103,9 +103,9 @@ class LightsThread(threading.Thread):
                 string = ""
 
             for i in range(0, STRIPCOUNT):
-                r = min(colors[i * 3] * amp, 1)
-                g = min(colors[i * 3 + 1] * amp, 1)
-                b = min(colors[i * 3 + 2] * amp, 1)
+                r = min(colors[i * 3] * amp * MASTER, 1)
+                g = min(colors[i * 3 + 1] * amp * MASTER, 1)
+                b = min(colors[i * 3 + 2] * amp * MASTER, 1)
                 if IsSimulated:
                     string = string + "0," + str(i) + "," + str(r) + "," + str(g) + "," + str(b) + ";"
                 else:
@@ -149,6 +149,7 @@ def updateGenerators():
 
 class AppThread(threading.Thread):
     def run(self):
+        global MASTEr
         app = Flask(__name__)
 
         @app.route("/")
@@ -162,6 +163,11 @@ class AppThread(threading.Thread):
             }
             return jsonify(settingsObj)
 
+        @app.route("/master/<string:value>")
+        def master(value):
+            MASTER = float(value)
+            return MASTER
+
         @app.route("/generator/<string:name>/<int:value>")
         def generator(name, value):
             generatorsByName[name] = value
@@ -173,22 +179,28 @@ class AppThread(threading.Thread):
 
 class InputThread(threading.Thread):
     def run(self):
-        global generators
-        global generatorsByName
+        global generators, generatorsByName, MASTER
+
         while True:
             string = raw_input()
             if string == "e":
                 appThread.join(0)
                 sys.exit()
 
-            setGenerators = string.split("%")
-            for i in range(0, len(setGenerators)):
-                if len(setGenerators[i]) > 1:
-                    switch = setGenerators[i].split("$")
-                    name = switch[0]
-                    value = int(switch[1])
-                    generatorsByName[name] = value
-            updateGenerators()
+            command = string.split(";")
+
+            if command[0] == "v":
+                setGenerators = command[1].split("%")
+                for i in range(0, len(setGenerators)):
+                    if len(setGenerators[i]) > 1:
+                        switch = setGenerators[i].split("$")
+                        name = switch[0]
+                        value = int(switch[1])
+                        generatorsByName[name] = value
+                updateGenerators()
+            if command[0] == "m":
+                MASTER = float(command[1])
+
 
 appThread = AppThread()
 inputThread = InputThread()

@@ -47,6 +47,10 @@
                         });
                     };
 
+                    var renderMaster = function(obj) {
+
+                    };
+
                     var setSwitch = function (name, value) {
                         if (settings["connection"] === "ajax") {
                             $.getJSON("/generator/" + name + "/" + (value ? 1 : 0), function (json) {
@@ -56,6 +60,17 @@
                             socket.emit("set", { name: name, value: value });
                         }
                     };
+
+                    var setMaster = function(value) {
+                        if (settings["connection"] === "ajax") {
+                            $.getJSON("/master/" + value, function (json) {
+                                renderMaster(json);
+                            });
+                        } else if (settings["connection"] === "socketio") {
+                            socket.emit("master", value);
+                        }
+                    };
+
 
                     $(".control-panel .button[data-type=click]").click(function () {
                         var el = $(this);
@@ -70,6 +85,24 @@
                             el.removeClass("active");
                         }
                     });
+
+                    $(".control-panel .button[data-type=master]").click(function () {
+                        var el = $(this);
+                        var name = el.attr("data-name");
+                        var to = !el.hasClass("active");
+
+                        if (to) {
+                            $(".button[data-type=master]").removeClass("active");
+                        }
+
+                        setMaster($(this).attr("data-value"));
+                        if (to) {
+                            el.addClass("active");
+                        } else {
+                            el.removeClass("active");
+                        }
+                    });
+
                     $(".control-panel .button[data-type=hold]").mouseup(function () {
                         setSwitch($(this).attr("data-name"), false);
                     }).mousedown(function () {
@@ -189,6 +222,29 @@
         </table>
 
         <div class="control-panel">
+            <div class="button active" data-name="master" data-value="1" data-type="master" data-group="0">
+                <div class="label white"></div>
+                <div class="title">MASTER F</div>
+            </div>
+            <div class="button" data-name="master" data-value="0.75" data-type="master" data-group="0">
+                <div class="label white"></div>
+                <div class="title">MASTER 75%</div>
+            </div>
+            <div class="button" data-name="master" data-value="0.5" data-type="master" data-group="0">
+                <div class="label white"></div>
+                <div class="title">MASTER 50%</div>
+            </div>
+            <div class="button" data-name="master" data-value="0.5" data-type="master" data-group="0">
+                <div class="label white"></div>
+                <div class="title">MASTER 25%</div>
+            </div>
+            <div class="button" data-name="master" data-value="0" data-type="master" data-group="0">
+                <div class="label white"></div>
+                <div class="title">BLACKOUT</div>
+            </div>
+        </div>
+
+        <div class="control-panel">
             <div class="button" data-name="wavegreen" data-type="click" data-group="1">
                 <div class="label green"></div>
                 <div class="title">GREEN WAVE</div>
@@ -228,9 +284,10 @@
             </div>
             <div class="clear"></div>
             <div class="button" data-name="ghost" data-type="click" data-group="3">
-                <div class="label white"></div>
+                <div class="label yellow"></div>
                 <div class="title">GHOST</div>
             </div>
+            <div class="clear"></div>
         </div>
     </body>
 </html>
