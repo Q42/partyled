@@ -43,7 +43,7 @@ def generator_Strobe(dT, fr, sC):
 g_prog1C = [0] * STRIPCOUNT * 3
 def generator_prog1(dT, fr, sC):
     global g_prog1C
-    spd = 1.2 # math.sin(dT * 3) + 1
+    spd = 1.2
     for i in range(0, sC):
         g_prog1C[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * spd * 0.94 + i * 0.3)
         g_prog1C[i * 3 + 1] = 0.5 + 0.5 * math.sin(dT * spd * 0.69 + i * 0.26)
@@ -56,9 +56,8 @@ g_prog2C = [0] * STRIPCOUNT * 3
 def generator_prog2(dT, fr, sC):
     global g_prog2C
     spd = 1
-    #print "!", spd
     for i in range(0, sC):
-        g_prog2C[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * spd * 0.94 + i * 0.20 + 1.0 * math.sin(0.91 * dT))
+        g_prog2C[i * 3 + 0] = 0.5 + 0.5 * math.sin(dT * spd * 0.94 + i * 0.200 + 1.0 * math.sin(0.91 * dT))
         g_prog2C[i * 3 + 1] = 0.5 + 0.5 * math.sin(dT * spd * 0.69 + i * 0.212 + 1.1 * math.sin(0.96 * dT))
         g_prog2C[i * 3 + 2] = 0.5 + 0.5 * math.sin(dT * spd * 1.01 + i * 0.193 + 0.4 * math.sin(0.33 * dT))
 
@@ -173,3 +172,25 @@ def generator_Ghost2(dT, fr, sC):
             if(g_ghost2Colors[i*3 + 2] < 0): g_ghost2Colors[i*3 + 2] = 0
 
     return g_ghost2Colors
+
+g_ghost3Colors = [0] * STRIPCOUNT * 3
+def generator_Ghost3(dT, fr, sC):
+    global g_ghost3Colors
+
+    fadeSpeed = 0.02 # higher = faster
+    runSpeed = 10    # higher = faster
+
+    for i in range(0, sC):
+        if(int(dT*runSpeed) % (sC * 15)) == i:
+            g_ghost3Colors[i*3 + 0] = 1
+            g_ghost3Colors[i*3 + 1] = 1
+            g_ghost3Colors[i*3 + 2] = 1
+        else:
+            g_ghost3Colors[i*3 + 0] -= fadeSpeed
+            g_ghost3Colors[i*3 + 1] -= fadeSpeed
+            g_ghost3Colors[i*3 + 2] -= fadeSpeed
+            if(g_ghost3Colors[i*3 + 0] < 0): g_ghost3Colors[i*3 + 0] = 0
+            if(g_ghost3Colors[i*3 + 1] < 0): g_ghost3Colors[i*3 + 1] = 0
+            if(g_ghost3Colors[i*3 + 2] < 0): g_ghost3Colors[i*3 + 2] = 0
+
+    return g_ghost3Colors

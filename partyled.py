@@ -152,6 +152,8 @@ def updateGenerators():
             newGenerator.append(generator_Ghost1)
         if name == "ghost2" and value == 1:
             newGenerator.append(generator_Ghost2)
+        if name == "ghost3" and value == 1:
+            newGenerator.append(generator_Ghost3)
 
     generators = newGenerator
 
