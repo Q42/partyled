@@ -23,7 +23,7 @@ var sendSwitch = function() {
     Object.keys(switches).forEach(function(key) {
         command += key + "$" + (switches[key] ? 1 : 0) + "%"
     });
-    console.log("sending command: " + command);
+    //console.log("Command: " + command);
     if (process) process.stdin.write(command+"\n");
 };
 
@@ -59,7 +59,10 @@ var tick = _.throttle(sendTick, 10);
 
 var process;
 var ledProcess = function() {
+    console.log("===== PARTYLED =====");
+    console.log("Starting LED controller/server...");
     process = spawn('python', ['partyled.py', 'node']);
+    console.log("Running.");
     process.stdin.setEncoding('utf-8');
     process.stdout.on('data', function (data) {
         var packet = data.toString().replace(/\n/g, "").split(";").map(function (i) {
@@ -93,7 +96,6 @@ ledProcess();
 
 fs.watch(".", function (event, filename) {
     if (filename !== "partyled.py") return;
-    if (filename !== "generators.py") return;
     process.kill();
     ledProcess();
 });
