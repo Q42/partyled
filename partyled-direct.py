@@ -66,7 +66,7 @@ def pwmscale(val):
 # example of when you might want to use the framecounter
 def generator_Strobe(dT, fr, sC):
   for i in range(0, sC):
-    c = 0 
+    c = 0
     if(int(dT*8) % 10) == i: c = 1
     colors[i*3 + 0] = 0
     colors[i*3 + 1] = 0
@@ -77,19 +77,19 @@ def generator_Ghost(dT, fr, sC):
   for i in range(0, sC):
     c = 1
     if(int(dT*10) % 50) == i:
-      z = int(dT*50) % 4 
+      z = int(dT*50) % 4
       if z == 0:
         colors[i*3 + 0] = random.random()
         colors[i*3 + 1] = random.random()
         colors[i*3 + 2] = random.random()
-    else:  
+    else:
       colors[i*3 + 0] -= sp
       colors[i*3 + 1] -= sp
       colors[i*3 + 2] -= sp
       if(colors[i*3 + 0] < 0): colors[i*3 + 0] = 0
       if(colors[i*3 + 1] < 0): colors[i*3 + 1] = 0
       if(colors[i*3 + 2] < 0): colors[i*3 + 2] = 0
- 
+
 
 # generator: smooth grayscale sinewave across strips
 def generator_Wave(dT, fr, sC):
@@ -116,14 +116,10 @@ def generator_TEST(dT, fr, sC):
 
 print "-----/ Q42 / partyLED /------"
 
-# 75% power for safety
 amp = 1
 
 while (True):
   generator_Ghost(time.time(), frames, STRIPCOUNT)
-  #generator_Wave(time.time(), frames, STRIPCOUNT)
-  #generator_Strobe(time.time(), frames, STRIPCOUNT)
-  #generator_ON(0,0,STRIPCOUNT)
   for i in range(0, STRIPCOUNT):
     setStripColor(i, colors[i*3] * amp, colors[i*3 + 1] * amp, colors[i*3 + 2] * amp)
   fps += 1
