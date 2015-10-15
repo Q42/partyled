@@ -47,7 +47,6 @@ io.on('connection', function (socket) {
         io.emit("switches", switches);
     });
     socket.on("master", function(value) {
-        console.log(value);
         process.stdin.write("m;"+value+"\n")
     })
 });
@@ -92,7 +91,6 @@ ledProcess();
 fs.watch(".", function (event, filename) {
     if (filename !== "partyled.py") return;
     if (filename !== "generators.py") return;
-    console.log(event, filename);
     process.kill();
     ledProcess();
 });
