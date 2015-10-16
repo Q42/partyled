@@ -149,7 +149,7 @@ class AppThread(threading.Thread):
     def run(self):
         global MASTER
         app = Flask(__name__)
-
+	print "starting flask..."
         @app.route("/")
         def index():
             return render_template('index.html')
@@ -172,8 +172,8 @@ class AppThread(threading.Thread):
             updateGenerators()
             return jsonify(generatorsByName)
 
-        if __name__ == '__main__':
-            app.run(debug=True, use_reloader=False, threaded=True, host='0.0.0.0', port=4000)
+        print "flask run"
+        app.run(debug=True, use_reloader=False, threaded=True, host="0.0.0.0", port=4000)
 
 class InputThread(threading.Thread):
     def run(self):
