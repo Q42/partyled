@@ -162,6 +162,7 @@ class AppThread(threading.Thread):
 
         @app.route("/master/<string:value>")
         def master(value):
+            global MASTER
             MASTER = float(value)
             return MASTER
 
@@ -211,7 +212,7 @@ try:
 
         lightsThread = LightsThread()
         lightsThread.run()
-        
+
 except KeyboardInterrupt:
     print "Ctrl-c pressed ..."
     appThread.join(0)
