@@ -201,15 +201,17 @@ class InputThread(threading.Thread):
 inputThread = InputThread()
 
 try:
-    appThread = AppThread()
-    if IsSimulated:
-        inputThread.start()
-    else:
-        appThread.setDaemon(True)
-        appThread.start()
+    if __name__ == "__main__":
+        appThread = AppThread()
+        if IsSimulated:
+            inputThread.start()
+        else:
+            appThread.setDaemon(True)
+            appThread.start()
 
-    lightsThread = LightsThread()
-    lightsThread.start()
+        lightsThread = LightsThread()
+        lightsThread.run()
+        
 except KeyboardInterrupt:
     print "Ctrl-c pressed ..."
     appThread.join(0)
