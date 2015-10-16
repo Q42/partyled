@@ -22,13 +22,13 @@ except ImportError, e:
 IsSimulated = False
 argv = sys.argv
 
-if len(argv) == 2 and argv[1] == "node":
+if len(argv) > 1 and argv[1] == "node":
     IsSimulated = True
 
 STRIPCOUNT = 10  # number of Q42 awesome 12V analog RGB LED strips. 10 is the max for now.
 PWMSCALE = 4096  # fit in PWM bitdepth. PCA9685 has a 12-bit PWM converter.
 GAMMA = 2.2  # gamma correction
-MASTER = float(1)
+MASTER = float(0.5)
 colors = [0] * STRIPCOUNT * 3
 r = 0
 g = 0
@@ -109,7 +109,6 @@ class LightsThread(threading.Thread):
 
         while True:
             tick()
-
             if IsSimulated:
                 time.sleep(0.01)
                 string = ""
@@ -149,7 +148,7 @@ class AppThread(threading.Thread):
     def run(self):
         global MASTER
         app = Flask(__name__)
-	print "starting flask..."
+
         @app.route("/")
         def index():
             return render_template('index.html')
@@ -173,7 +172,7 @@ class AppThread(threading.Thread):
             return jsonify(generatorsByName)
 
         print "flask run"
-        app.run(debug=True, use_reloader=False, threaded=True, host="0.0.0.0", port=4000)
+        app.run(debug=False, use_reloader=False, threaded=True, host="0.0.0.0", port=4000)
 
 class InputThread(threading.Thread):
     def run(self):
@@ -199,18 +198,18 @@ class InputThread(threading.Thread):
             if command[0] == "m":
                 MASTER = float(command[1])
 
-
-appThread = AppThread()
 inputThread = InputThread()
 
 try:
+    appThread = AppThread()
     if IsSimulated:
         inputThread.start()
     else:
         appThread.setDaemon(True)
         appThread.start()
+
     lightsThread = LightsThread()
-    lightsThread.run()
+    lightsThread.start()
 except KeyboardInterrupt:
     print "Ctrl-c pressed ..."
     appThread.join(0)
