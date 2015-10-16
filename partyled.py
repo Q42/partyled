@@ -87,7 +87,7 @@ def setStripColor(stripID, r, g, b):
 
 # clip and scale a 0..1 input (inclusive) to 0..PWMSCALE
 def pwmscale(val):
-    if p < 0: p = 0;
+    if val < 0: val = 0;
     p = (val ** GAMMA) * PWMSCALE;
     if p > PWMSCALE - 1: p = PWMSCALE - 1
     return int(p)
