@@ -43,6 +43,16 @@ def generator_white(dT, fr):
         rgb[i * 3 + 2] = 1
     return rgb
 
+def generator_rgb(dT, fr):
+    global rgb
+    z = int(dT) % 4
+    for i in range(0, sC):
+        rgb[i * 3] =     0
+        rgb[i * 3 + 1] = 0
+        rgb[i * 3 + 2] = 0
+        if z < 3: rgb[i * 3 + z] = 1
+    return rgb
+
 def setup(app, stripcount):
     global rgb, sC
     sC = stripcount
@@ -52,3 +62,4 @@ def setup(app, stripcount):
     app.register_generator('allpurple', generator_purple)
     app.register_generator('allblue', generator_blue)
     app.register_generator('allwhite', generator_white)
+    app.register_generator('rgb', generator_rgb)
