@@ -1,0 +1,58 @@
+
+[
+  {
+    "step": {
+      "duration": 30,
+      "combine": {
+        "type": "add",
+        "inputs": [
+          {
+            "generator": "progression2",
+            "amp": 0.5
+          },
+          {
+            "generator": "ghost-scan",
+            "amp": 1
+          }
+        ]
+      }
+    }
+  },
+
+  {
+    "transition": {
+      "type": "xfade",
+      "parameters": {
+        "time": 5.0
+      }
+    }
+  },
+
+  {
+    "step": {
+      "duration": 30,
+      "combine": {
+        "type": "add",
+        "inputs": [
+          {
+            "generator": "wave-blue",
+            "amp": 0.7
+          },
+          {
+            "generator": "traktor-strobe",
+            "amp": 1
+          }
+        ]
+      }
+    }
+  },
+
+  {
+    "transition": {
+      "type": "xfade",
+      "parameters": {
+        "time": 5.0
+      }
+    }
+  }
+]

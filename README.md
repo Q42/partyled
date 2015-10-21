@@ -48,7 +48,8 @@ Party LED system in 020
 
 # OPERATE
 
-* Start de server plus web UI: `./run_simulator.sh`
+* Develop: `./run_server.sh`, browser to localhost:4000
+* Run on production: ssh in, `nohup python partyled.py &`, logout
 
 # PLUGINS TOEVOEGEN
 
