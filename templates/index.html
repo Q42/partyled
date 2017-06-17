@@ -72,7 +72,7 @@
                     };
 
 
-                    $(".control-panel .button[data-type=click]").click(function () {
+                    $(".control-panel .button[data-type=click]").mousedown(function () {
                         var el = $(this);
                         var name = el.attr("data-name");
                         var to = !el.hasClass("active");
@@ -86,7 +86,7 @@
                         }
                     });
 
-                    $(".control-panel .button[data-type=master]").click(function () {
+                    $(".control-panel .button[data-type=master]").mousedown(function () {
                         var el = $(this);
                         var name = el.attr("data-name");
                         var to = !el.hasClass("active");
